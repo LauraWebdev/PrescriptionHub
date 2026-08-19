@@ -2,6 +2,7 @@ package media.laura.prescriptionhub.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import media.laura.prescriptionhub.data.model.DoseChecklistItem
+import media.laura.prescriptionhub.data.model.DoseDayProgress
 import media.laura.prescriptionhub.data.model.Prescription
 import media.laura.prescriptionhub.data.model.ScheduledDose
 import java.time.LocalDate
@@ -69,13 +70,25 @@ interface PrescriptionService {
     fun getDoseChecklistForDate(date: LocalDate): Flow<List<DoseChecklistItem>>
 
     /**
+     * Observes how much of each day between [startDate] and [endDate] has been taken.
+     *
+     * Days without any scheduled dose are left out.
+     */
+    fun getDoseProgressForDates(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<List<DoseDayProgress>>
+
+    /**
      * Stores the taken state for one prescription dose slot.
+     *
+     * @param takenAt When the dose was taken.
      */
     suspend fun setDoseTaken(
         snapshotId: Long,
         scheduledDate: LocalDate,
         scheduledTime: LocalTime,
         taken: Boolean,
-        takenAt: LocalDateTime? = if (taken) LocalDateTime.now() else null
+        takenAt: LocalDateTime? = null
     )
 }

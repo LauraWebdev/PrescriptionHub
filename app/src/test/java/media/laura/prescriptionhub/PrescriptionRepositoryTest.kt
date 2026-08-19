@@ -332,4 +332,296 @@ class PrescriptionRepositoryTest {
         val nextDay = historicalService.getDoseChecklistForDate(LocalDate.of(2026, 8, 20)).first()
         assertTrue(nextDay.isEmpty())
     }
+
+    @Test
+    fun testChecklistCoversTheWholeDayForAPrescriptionAddedInTheEvening() = runBlocking {
+        val now = LocalDateTime.of(2026, 8, 19, 17, 37)
+        val eveningService = PrescriptionRepository(
+            database.prescriptionDao(),
+            nowProvider = { now }
+        )
+
+        eveningService.addPrescription(
+            Prescription(
+                name = "Lorem Ipsum 3",
+                color = 0xFFAA00AA,
+                dosis = "teeest",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(6, 0), LocalTime.of(12, 0), LocalTime.of(15, 0))
+                )
+            )
+        )
+
+        val sameDay = eveningService.getDoseChecklistForDate(LocalDate.of(2026, 8, 19)).first()
+
+        assertEquals(
+            listOf(LocalTime.of(6, 0), LocalTime.of(12, 0), LocalTime.of(15, 0)),
+            sameDay.map { it.scheduledTime }
+        )
+    }
+
+    @Test
+    fun testChecklistDoesNotShowAPrescriptionBeforeTheDayItWasAdded() = runBlocking {
+        val now = LocalDateTime.of(2026, 8, 19, 17, 37)
+        val eveningService = PrescriptionRepository(
+            database.prescriptionDao(),
+            nowProvider = { now }
+        )
+
+        eveningService.addPrescription(
+            Prescription(
+                name = "Lorem Ipsum 3",
+                color = 0xFFAA00AA,
+                dosis = "teeest",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(6, 0))
+                )
+            )
+        )
+
+        val dayBefore = eveningService.getDoseChecklistForDate(LocalDate.of(2026, 8, 18)).first()
+
+        assertTrue(dayBefore.isEmpty())
+    }
+
+    @Test
+    fun testChecklistHasOneRowPerSlotAfterASameDayUpdate() = runBlocking {
+        var now = LocalDateTime.of(2026, 8, 19, 7, 0)
+        val editedService = PrescriptionRepository(
+            database.prescriptionDao(),
+            nowProvider = { now }
+        )
+
+        val prescriptionId = editedService.addPrescription(
+            Prescription(
+                name = "Drug C",
+                color = 0xFF0000AA,
+                dosis = "100mg",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0))
+                )
+            )
+        )
+
+        now = LocalDateTime.of(2026, 8, 19, 12, 0)
+        val existing = editedService.getPrescription(prescriptionId)!!
+        editedService.updatePrescription(existing.copy(dosis = "150mg"))
+
+        val sameDay = editedService.getDoseChecklistForDate(LocalDate.of(2026, 8, 19)).first()
+
+        assertEquals(2, sameDay.size)
+        assertEquals(listOf(LocalTime.of(8, 0), LocalTime.of(20, 0)), sameDay.map { it.scheduledTime })
+        assertEquals("100mg", sameDay[0].dosis)
+        assertEquals("150mg", sameDay[1].dosis)
+    }
+
+    @Test
+    fun testUpdateAtTheExactSlotTimeKeepsOneRow() = runBlocking {
+        var now = LocalDateTime.of(2026, 8, 19, 7, 0)
+        val editedService = PrescriptionRepository(
+            database.prescriptionDao(),
+            nowProvider = { now }
+        )
+
+        val prescriptionId = editedService.addPrescription(
+            Prescription(
+                name = "Drug D",
+                color = 0xFF00AAAA,
+                dosis = "100mg",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(12, 0))
+                )
+            )
+        )
+
+        now = LocalDateTime.of(2026, 8, 19, 12, 0)
+        val existing = editedService.getPrescription(prescriptionId)!!
+        editedService.updatePrescription(existing.copy(dosis = "150mg"))
+
+        val sameDay = editedService.getDoseChecklistForDate(LocalDate.of(2026, 8, 19)).first()
+
+        assertEquals(1, sameDay.size)
+        assertEquals("150mg", sameDay[0].dosis)
+    }
+
+    @Test
+    fun testRecordedIntakeSurvivesAnUpdateOfAnEarlierSlot() = runBlocking {
+        var now = LocalDateTime.of(2026, 8, 19, 17, 0)
+        val editedService = PrescriptionRepository(
+            database.prescriptionDao(),
+            nowProvider = { now }
+        )
+
+        val prescriptionId = editedService.addPrescription(
+            Prescription(
+                name = "Drug E",
+                color = 0xFFAA5500,
+                dosis = "100mg",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(8, 0))
+                )
+            )
+        )
+
+        // The 08:00 dose was already taken this morning, before the prescription was entered.
+        val day = LocalDate.of(2026, 8, 19)
+        val added = editedService.getDoseChecklistForDate(day).first().single()
+        editedService.setDoseTaken(
+            snapshotId = added.snapshotId,
+            scheduledDate = day,
+            scheduledTime = LocalTime.of(8, 0),
+            taken = true
+        )
+
+        now = LocalDateTime.of(2026, 8, 19, 18, 0)
+        val existing = editedService.getPrescription(prescriptionId)!!
+        editedService.updatePrescription(existing.copy(dosis = "150mg"))
+
+        val afterUpdate = editedService.getDoseChecklistForDate(day).first().single()
+        assertTrue(afterUpdate.taken)
+        assertEquals(LocalDateTime.of(2026, 8, 19, 17, 0), afterUpdate.takenAt)
+    }
+
+    @Test
+    fun testChecklistDropsSlotsAfterAPrescriptionWasDeleted() = runBlocking {
+        var now = LocalDateTime.of(2026, 8, 19, 7, 0)
+        val deletingService = PrescriptionRepository(
+            database.prescriptionDao(),
+            nowProvider = { now }
+        )
+
+        val prescriptionId = deletingService.addPrescription(
+            Prescription(
+                name = "Drug F",
+                color = 0xFFAA0055,
+                dosis = "1 pill",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0))
+                )
+            )
+        )
+
+        now = LocalDateTime.of(2026, 8, 19, 18, 0)
+        deletingService.deletePrescriptionById(prescriptionId)
+
+        val sameDay = deletingService.getDoseChecklistForDate(LocalDate.of(2026, 8, 19)).first()
+
+        assertEquals(listOf(LocalTime.of(8, 0)), sameDay.map { it.scheduledTime })
+    }
+
+    @Test
+    fun testAPrescriptionAddedAndDeletedTheSameDayDoesNotComeBackForEarlierSlots() = runBlocking {
+        var now = LocalDateTime.of(2026, 8, 19, 16, 8)
+        val shortLivedService = PrescriptionRepository(
+            database.prescriptionDao(),
+            nowProvider = { now }
+        )
+
+        val prescriptionId = shortLivedService.addPrescription(
+            Prescription(
+                name = "Test",
+                color = 0xFFAA00AA,
+                dosis = "123",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(15, 0), LocalTime.of(23, 0))
+                )
+            )
+        )
+
+        now = LocalDateTime.of(2026, 8, 19, 16, 9)
+        shortLivedService.deletePrescriptionById(prescriptionId)
+
+        val sameDay = shortLivedService.getDoseChecklistForDate(LocalDate.of(2026, 8, 19)).first()
+
+        assertTrue(sameDay.isEmpty())
+    }
+
+    @Test
+    fun testEveryTwoDaysStartingYesterdaySkipsTodayAndReturnsTomorrow() = runBlocking {
+        val now = LocalDateTime.of(2026, 8, 19, 17, 37)
+        val intervalService = PrescriptionRepository(
+            database.prescriptionDao(),
+            nowProvider = { now }
+        )
+
+        intervalService.addPrescription(
+            Prescription(
+                name = "Test Drug 123",
+                color = 0xFFAA5555,
+                dosis = "blub",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.EVERY_X_DAYS,
+                    everyXDays = 2,
+                    timesOfDay = listOf(LocalTime.of(20, 0)),
+                    startDate = LocalDate.of(2026, 8, 18)
+                )
+            )
+        )
+
+        val today = intervalService.getDoseChecklistForDate(LocalDate.of(2026, 8, 19)).first()
+        val tomorrow = intervalService.getDoseChecklistForDate(LocalDate.of(2026, 8, 20)).first()
+
+        assertTrue(today.isEmpty())
+        assertEquals(listOf(LocalTime.of(20, 0)), tomorrow.map { it.scheduledTime })
+    }
+
+    @Test
+    fun testDoseProgressCoversTheRequestedRangeAndSkipsEmptyDays() = runBlocking {
+        val now = LocalDateTime.of(2026, 8, 19, 7, 0)
+        val progressService = PrescriptionRepository(
+            database.prescriptionDao(),
+            nowProvider = { now }
+        )
+
+        progressService.addPrescription(
+            Prescription(
+                name = "Drug G",
+                color = 0xFF223344,
+                dosis = "1 pill",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.EVERY_X_DAYS,
+                    everyXDays = 2,
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                    startDate = LocalDate.of(2026, 8, 19)
+                )
+            )
+        )
+
+        val day = LocalDate.of(2026, 8, 19)
+        val doses = progressService.getDoseChecklistForDate(day).first()
+        progressService.setDoseTaken(
+            snapshotId = doses.first().snapshotId,
+            scheduledDate = day,
+            scheduledTime = LocalTime.of(8, 0),
+            taken = true
+        )
+
+        val progress = progressService.getDoseProgressForDates(
+            startDate = day,
+            endDate = day.plusDays(3)
+        ).first()
+
+        // Every second day only, so the 20th and 22nd carry no dose at all.
+        assertEquals(listOf(day, day.plusDays(2)), progress.map { it.date })
+        assertEquals(2, progress[0].doseCount)
+        assertEquals(1, progress[0].takenCount)
+        assertEquals(0, progress[1].takenCount)
+    }
+
+    @Test
+    fun testDoseProgressForAnInvertedRangeIsEmpty() = runBlocking {
+        val progress = repository.getDoseProgressForDates(
+            startDate = LocalDate.of(2026, 8, 19),
+            endDate = LocalDate.of(2026, 8, 18)
+        ).first()
+
+        assertTrue(progress.isEmpty())
+    }
 }

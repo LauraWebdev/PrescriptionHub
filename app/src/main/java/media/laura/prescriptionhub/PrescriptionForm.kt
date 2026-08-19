@@ -24,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -32,6 +33,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
@@ -49,6 +51,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -60,6 +63,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import media.laura.prescriptionhub.data.model.Prescription
@@ -67,8 +71,10 @@ import media.laura.prescriptionhub.data.model.Schedule
 import media.laura.prescriptionhub.data.model.ScheduleType
 import media.laura.prescriptionhub.ui.theme.PrescriptionHubTheme
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -95,6 +101,17 @@ fun Int.hasDay(day: DayOfWeek): Boolean = this and (1 shl (day.value - 1)) != 0
 private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
 fun formatTimeOfDay(time: LocalTime): String = time.format(timeFormatter)
+
+private val dateFormatter: DateTimeFormatter =
+    DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+
+fun formatStartDate(date: LocalDate): String = date.format(dateFormatter)
+
+/** Saver that persists a date as an ISO string. */
+private val localDateSaver = Saver<LocalDate, String>(
+    save = { it.toString() },
+    restore = LocalDate::parse
+)
 
 /** Saver that persists times of day as ISO strings. */
 private val timesSaver = listSaver<SnapshotStateList<LocalTime>, String>(
@@ -133,6 +150,9 @@ fun PrescriptionForm(
     var everyXDaysText by rememberSaveable(initialPrescription) {
         mutableStateOf(initialPrescription?.schedule?.everyXDays?.toString().orEmpty())
     }
+    var startDate by rememberSaveable(initialPrescription, stateSaver = localDateSaver) {
+        mutableStateOf(initialPrescription?.schedule?.startDate ?: LocalDate.now())
+    }
     val times = rememberSaveable(initialPrescription, saver = timesSaver) {
         initialPrescription?.schedule?.timesOfDay.orEmpty().toMutableStateList()
     }
@@ -140,6 +160,7 @@ fun PrescriptionForm(
     var typeMenuExpanded by remember { mutableStateOf(false) }
     var showCustomColorDialog by rememberSaveable { mutableStateOf(false) }
     var showTimePicker by rememberSaveable { mutableStateOf(false) }
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
 
     val everyXDays = everyXDaysText.toIntOrNull()
     val isValid = name.isNotBlank() &&
@@ -155,8 +176,10 @@ fun PrescriptionForm(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "New Prescription",
-            style = MaterialTheme.typography.headlineSmall
+            text = if (initialPrescription == null) "New Prescription" else "Edit Prescription",
+            style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
         )
 
         FormSection(title = "General") {
@@ -260,6 +283,22 @@ fun PrescriptionForm(
                 )
             }
 
+            OutlinedTextField(
+                value = formatStartDate(startDate),
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(text = "Start date") },
+                trailingIcon = {
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Pick start date"
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Text(
                 text = "Times",
                 style = MaterialTheme.typography.labelLarge,
@@ -325,7 +364,8 @@ fun PrescriptionForm(
                             } else {
                                 null
                             },
-                            timesOfDay = times.sorted()
+                            timesOfDay = times.sorted(),
+                            startDate = startDate
                         )
                     )
                 )
@@ -352,6 +392,17 @@ fun PrescriptionForm(
                 showCustomColorDialog = false
             },
             onDismiss = { showCustomColorDialog = false }
+        )
+    }
+
+    if (showDatePicker) {
+        DayPickerDialog(
+            initialDate = startDate,
+            onConfirm = { picked ->
+                startDate = picked
+                showDatePicker = false
+            },
+            onDismiss = { showDatePicker = false }
         )
     }
 
@@ -506,6 +557,26 @@ fun PrescriptionFormEveryXDaysPreview() {
                     scheduleType = ScheduleType.EVERY_X_DAYS,
                     everyXDays = 2,
                     timesOfDay = listOf(LocalTime.of(9, 30))
+                )
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, heightDp = 900)
+@Composable
+fun PrescriptionFormEditPreview() {
+    PrescriptionHubTheme {
+        PrescriptionForm(
+            initialPrescription = Prescription(
+                id = 7,
+                name = "Metformin",
+                color = prescriptionColors[6].toStoredLong(),
+                dosis = "850mg",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(23, 0)),
+                    startDate = LocalDate.of(2026, 1, 15)
                 )
             )
         )

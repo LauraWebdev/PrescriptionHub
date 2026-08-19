@@ -68,6 +68,9 @@ interface PrescriptionDao {
     @Query("SELECT * FROM dose_intake_records WHERE scheduledDate = :date")
     fun getDoseIntakeRecordsForDate(date: LocalDate): Flow<List<DoseIntakeRecord>>
 
+    @Query("SELECT * FROM dose_intake_records WHERE scheduledDate BETWEEN :startDate AND :endDate")
+    fun getDoseIntakeRecordsBetween(startDate: LocalDate, endDate: LocalDate): Flow<List<DoseIntakeRecord>>
+
     @Query("SELECT * FROM dose_intake_records WHERE snapshotId = :snapshotId AND scheduledDate = :date AND scheduledTime = :time")
     suspend fun getDoseIntakeRecord(snapshotId: Long, date: LocalDate, time: LocalTime): DoseIntakeRecord?
 
