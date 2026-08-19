@@ -1,9 +1,12 @@
 package media.laura.prescriptionhub.data.repository
 
 import kotlinx.coroutines.flow.Flow
+import media.laura.prescriptionhub.data.model.DoseChecklistItem
 import media.laura.prescriptionhub.data.model.Prescription
 import media.laura.prescriptionhub.data.model.ScheduledDose
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 /**
  * Service interface exposing prescription management and schedule queries.
@@ -59,4 +62,20 @@ interface PrescriptionService {
      * Observes all individual dose events scheduled for a specific [date], sorted chronologically by time of day.
      */
     fun getScheduledDosesForDate(date: LocalDate): Flow<List<ScheduledDose>>
+
+    /**
+     * Observes checklist rows for [date] including taken state and exact taken timestamp.
+     */
+    fun getDoseChecklistForDate(date: LocalDate): Flow<List<DoseChecklistItem>>
+
+    /**
+     * Stores the taken state for one prescription dose slot.
+     */
+    suspend fun setDoseTaken(
+        snapshotId: Long,
+        scheduledDate: LocalDate,
+        scheduledTime: LocalTime,
+        taken: Boolean,
+        takenAt: LocalDateTime? = if (taken) LocalDateTime.now() else null
+    )
 }

@@ -8,6 +8,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 
 class ConvertersTest {
@@ -79,5 +80,22 @@ class ConvertersTest {
 
         assertNull(converters.fromLocalDate(null))
         assertNull(converters.toLocalDate(null))
+    }
+
+    @Test
+    fun testLocalDateTimeConversion() {
+        val dateTime = LocalDateTime.of(2026, 8, 19, 8, 4, 5)
+        val serialized = converters.fromLocalDateTime(dateTime)
+        assertEquals("2026-08-19T08:04:05", serialized)
+
+        val deserialized = converters.toLocalDateTime(serialized)
+        assertEquals(dateTime, deserialized)
+
+        // SQLite-style space separator should also be parsed.
+        val sqliteFormatted = converters.toLocalDateTime("2026-08-19 08:04:05")
+        assertEquals(dateTime, sqliteFormatted)
+
+        assertNull(converters.fromLocalDateTime(null))
+        assertNull(converters.toLocalDateTime(null))
     }
 }

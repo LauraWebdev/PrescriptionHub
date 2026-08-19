@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import media.laura.prescriptionhub.data.model.ScheduleType
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -15,6 +16,7 @@ class Converters {
 
     private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_TIME
     private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
+    private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
     @TypeConverter
     fun fromScheduleType(value: ScheduleType?): String? {
@@ -87,6 +89,31 @@ class Converters {
     }
 
     @TypeConverter
+    fun fromLocalTime(time: LocalTime?): String? {
+        return time?.format(timeFormatter)
+    }
+
+    @TypeConverter
+    fun toLocalTime(value: String?): LocalTime? {
+        return value?.let {
+            val trimmed = it.trim()
+            if (trimmed == "24:00" || trimmed == "24:00:00") {
+                LocalTime.MIDNIGHT
+            } else {
+                try {
+                    LocalTime.parse(trimmed, timeFormatter)
+                } catch (e: Exception) {
+                    try {
+                        LocalTime.parse(trimmed)
+                    } catch (e2: Exception) {
+                        null
+                    }
+                }
+            }
+        }
+    }
+
+    @TypeConverter
     fun fromLocalDate(date: LocalDate?): String? {
         return date?.format(dateFormatter)
     }
@@ -99,6 +126,27 @@ class Converters {
             } catch (e: Exception) {
                 try {
                     LocalDate.parse(it)
+                } catch (e2: Exception) {
+                    null
+                }
+            }
+        }
+    }
+
+    @TypeConverter
+    fun fromLocalDateTime(dateTime: LocalDateTime?): String? {
+        return dateTime?.format(dateTimeFormatter)
+    }
+
+    @TypeConverter
+    fun toLocalDateTime(value: String?): LocalDateTime? {
+        return value?.let {
+            val normalized = it.trim().replace(" ", "T")
+            try {
+                LocalDateTime.parse(normalized, dateTimeFormatter)
+            } catch (e: Exception) {
+                try {
+                    LocalDateTime.parse(normalized)
                 } catch (e2: Exception) {
                     null
                 }
