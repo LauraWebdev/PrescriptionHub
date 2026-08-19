@@ -11,9 +11,14 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -25,13 +30,20 @@ fun PrescriptionScreen(
     modifier: Modifier = Modifier,
     onAddPrescription: () -> Unit = {}
 ) {
+    var showPrescriptionForm by rememberSaveable { mutableStateOf(false) }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(text = "Prescription") },
                 actions = {
-                    IconButton(onClick = onAddPrescription) {
+                    IconButton(
+                        onClick = {
+                            showPrescriptionForm = true
+                            onAddPrescription()
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Add Prescription"
@@ -50,6 +62,18 @@ fun PrescriptionScreen(
             Text(
                 text = "Prescription",
                 modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+
+    if (showPrescriptionForm) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                showPrescriptionForm = false
+            }
+        ) {
+            PrescriptionForm(
+                modifier = Modifier.padding(bottom = 24.dp)
             )
         }
     }
