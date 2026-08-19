@@ -73,7 +73,9 @@ fun PrescriptionScreen(
             }
         ) {
             PrescriptionForm(
-                modifier = Modifier.padding(bottom = 24.dp)
+                modifier = Modifier.padding(bottom = 24.dp),
+                // TODO: persist via PrescriptionHubApplication.prescriptionService.addPrescription
+                onSave = { showPrescriptionForm = false }
             )
         }
     }
