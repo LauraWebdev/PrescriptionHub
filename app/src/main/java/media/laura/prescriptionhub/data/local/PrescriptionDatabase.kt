@@ -20,7 +20,7 @@ import media.laura.prescriptionhub.data.model.PrescriptionSnapshot
         PrescriptionSnapshot::class,
         DoseIntakeRecord::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -109,6 +109,15 @@ abstract class PrescriptionDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_dose_intake_records_scheduledDate` ON `dose_intake_records` (`scheduledDate`)")
+            }
+        }
+
+        val MIGRATIONS: Array<Migration>
+            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+
         @Volatile
         private var INSTANCE: PrescriptionDatabase? = null
 
@@ -118,7 +127,7 @@ abstract class PrescriptionDatabase : RoomDatabase() {
                     context.applicationContext,
                     PrescriptionDatabase::class.java,
                     "prescription_database"
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
+                ).addMigrations(*MIGRATIONS).build()
                 INSTANCE = instance
                 instance
             }

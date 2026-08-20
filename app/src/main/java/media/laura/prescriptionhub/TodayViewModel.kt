@@ -80,14 +80,10 @@ class TodayViewModel(
      */
     fun checkAll(group: DoseTimeGroup) {
         viewModelScope.launch {
-            group.doses.filterNot { it.taken }.forEach { dose ->
-                prescriptionService.setDoseTaken(
-                    snapshotId = dose.snapshotId,
-                    scheduledDate = dose.scheduledDate,
-                    scheduledTime = dose.scheduledTime,
-                    taken = true
-                )
-            }
+            prescriptionService.setDosesTaken(
+                doses = group.doses.filterNot { it.taken },
+                taken = true
+            )
         }
     }
 

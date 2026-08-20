@@ -1,11 +1,15 @@
 package media.laura.prescriptionhub.data.repository
 
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import media.laura.prescriptionhub.data.local.PrescriptionDao
+import media.laura.prescriptionhub.data.local.TakenSlot
 import media.laura.prescriptionhub.data.model.DoseChecklistItem
 import media.laura.prescriptionhub.data.model.DoseDayProgress
 import media.laura.prescriptionhub.data.model.DoseIntakeRecord
@@ -18,10 +22,13 @@ import java.time.LocalTime
 
 /**
  * Concrete implementation of [PrescriptionService] backed by Room [PrescriptionDao].
+ *
+ * @param workDispatcher Where snapshot filtering and checklist building run.
  */
 class PrescriptionRepository(
     private val prescriptionDao: PrescriptionDao,
-    private val nowProvider: () -> LocalDateTime
+    private val nowProvider: () -> LocalDateTime,
+    private val workDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : PrescriptionService {
 
     override fun getAllPrescriptions(): Flow<List<Prescription>> {
@@ -80,7 +87,7 @@ class PrescriptionRepository(
             list.filter { prescription ->
                 prescription.schedule.isScheduledOn(date)
             }
-        }
+        }.flowOn(workDispatcher)
     }
 
     override fun getScheduledDosesForDate(date: LocalDate): Flow<List<ScheduledDose>> {
@@ -92,12 +99,15 @@ class PrescriptionRepository(
                     ScheduledDose(prescription = prescription, time = time)
                 }
             }.sorted()
-        }
+        }.flowOn(workDispatcher)
     }
 
     override fun getDoseChecklistForDate(date: LocalDate): Flow<List<DoseChecklistItem>> {
         return combine(
-            prescriptionDao.getAllPrescriptionSnapshots(),
+            prescriptionDao.getSnapshotsOverlapping(
+                rangeStart = date.atStartOfDay(),
+                rangeEnd = date.atTime(LocalTime.MAX)
+            ),
             prescriptionDao.getDoseIntakeRecordsForDate(date)
         ) { snapshots, intakeRecords ->
             buildDoseChecklistForDate(
@@ -105,25 +115,27 @@ class PrescriptionRepository(
                 snapshots = snapshots,
                 intakeRecords = intakeRecords
             )
-        }
+        }.flowOn(workDispatcher)
     }
 
     override suspend fun getDoseChecklistBetween(
         start: LocalDateTime,
         end: LocalDateTime
-    ): List<DoseChecklistItem> {
+    ): List<DoseChecklistItem> = withContext(workDispatcher) {
         if (end < start) {
-            return emptyList()
+            return@withContext emptyList()
         }
 
         val startDate = start.toLocalDate()
         val endDate = end.toLocalDate()
-        val snapshots = prescriptionDao.getAllPrescriptionSnapshots().first()
+        val snapshots = prescriptionDao.getSnapshotsOverlappingOnce(
+            rangeStart = startDate.atStartOfDay(),
+            rangeEnd = endDate.atTime(LocalTime.MAX)
+        )
         val intakeByDate = prescriptionDao.getDoseIntakeRecordsBetween(startDate, endDate)
-            .first()
             .groupBy { it.scheduledDate }
 
-        return generateSequence(startDate) { previous ->
+        generateSequence(startDate) { previous ->
             previous.plusDays(1).takeIf { it <= endDate }
         }.flatMap { date ->
             buildDoseChecklistForDate(
@@ -145,31 +157,25 @@ class PrescriptionRepository(
         }
 
         return combine(
-            prescriptionDao.getAllPrescriptionSnapshots(),
-            prescriptionDao.getDoseIntakeRecordsBetween(startDate, endDate)
-        ) { snapshots, intakeRecords ->
-            val intakeByDate = intakeRecords.groupBy { it.scheduledDate }
+            prescriptionDao.getSnapshotsOverlapping(
+                rangeStart = startDate.atStartOfDay(),
+                rangeEnd = endDate.atTime(LocalTime.MAX)
+            ),
+            prescriptionDao.getTakenSlotsBetween(startDate, endDate)
+        ) { snapshots, takenSlots ->
+            val takenKeys = takenSlots.mapTo(mutableSetOf()) { it.toSlotKey() }
 
             generateSequence(startDate) { previous ->
                 val next = previous.plusDays(1)
                 next.takeIf { it <= endDate }
             }.mapNotNull { date ->
-                val doses = buildDoseChecklistForDate(
+                buildDayProgress(
                     date = date,
                     snapshots = snapshots,
-                    intakeRecords = intakeByDate[date].orEmpty()
+                    takenKeys = takenKeys
                 )
-                if (doses.isEmpty()) {
-                    null
-                } else {
-                    DoseDayProgress(
-                        date = date,
-                        doseCount = doses.size,
-                        takenCount = doses.count { it.taken }
-                    )
-                }
             }.toList()
-        }
+        }.flowOn(workDispatcher)
     }
 
     override suspend fun setDoseTaken(
@@ -180,22 +186,54 @@ class PrescriptionRepository(
         takenAt: LocalDateTime?
     ) {
         val normalizedTakenAt = if (taken) (takenAt ?: nowProvider()) else null
-        val existing = prescriptionDao.getDoseIntakeRecord(snapshotId, scheduledDate, scheduledTime)
-        val record = if (existing == null) {
-            DoseIntakeRecord(
+        prescriptionDao.upsertDoseIntakeRecord(
+            intakeRecordFor(
                 snapshotId = snapshotId,
                 scheduledDate = scheduledDate,
                 scheduledTime = scheduledTime,
                 taken = taken,
                 takenAt = normalizedTakenAt
             )
-        } else {
-            existing.copy(
+        )
+    }
+
+    override suspend fun setDosesTaken(doses: List<DoseChecklistItem>, taken: Boolean) {
+        if (doses.isEmpty()) {
+            return
+        }
+
+        val normalizedTakenAt = if (taken) nowProvider() else null
+        val records = doses.map { dose ->
+            intakeRecordFor(
+                snapshotId = dose.snapshotId,
+                scheduledDate = dose.scheduledDate,
+                scheduledTime = dose.scheduledTime,
                 taken = taken,
                 takenAt = normalizedTakenAt
             )
         }
-        prescriptionDao.upsertDoseIntakeRecord(record)
+        prescriptionDao.upsertDoseIntakeRecords(records)
+    }
+
+    /**
+     * Builds the row to upsert for one slot, carrying over the existing row's id when there is one.
+     */
+    private suspend fun intakeRecordFor(
+        snapshotId: Long,
+        scheduledDate: LocalDate,
+        scheduledTime: LocalTime,
+        taken: Boolean,
+        takenAt: LocalDateTime?
+    ): DoseIntakeRecord {
+        val existing = prescriptionDao.getDoseIntakeRecord(snapshotId, scheduledDate, scheduledTime)
+        return existing?.copy(taken = taken, takenAt = takenAt)
+            ?: DoseIntakeRecord(
+                snapshotId = snapshotId,
+                scheduledDate = scheduledDate,
+                scheduledTime = scheduledTime,
+                taken = taken,
+                takenAt = takenAt
+            )
     }
 
     private suspend fun closeOpenSnapshotForPrescription(
@@ -213,8 +251,6 @@ class PrescriptionRepository(
         snapshots: List<PrescriptionSnapshot>,
         intakeRecords: List<DoseIntakeRecord>
     ): List<DoseChecklistItem> {
-        val dayStart = date.atStartOfDay()
-        val dayEnd = date.atTime(LocalTime.MAX)
         val intakeBySlot = intakeRecords.associateBy {
             DoseSlotKey(
                 snapshotId = it.snapshotId,
@@ -223,37 +259,7 @@ class PrescriptionRepository(
             )
         }
 
-        return snapshots
-            .filter { snapshot ->
-                snapshot.validFrom <= dayEnd && (snapshot.validTo == null || snapshot.validTo >= dayStart)
-            }
-            .filter { snapshot ->
-                snapshot.schedule.isScheduledOn(date)
-            }
-            .groupBy { snapshot -> snapshot.prescriptionId }
-            .values
-            .flatMap { snapshotsOfPrescription ->
-                // A prescription that still exists covers the whole day, including the slots before
-                // it was added or edited. One that was deleted during the day only covers the slots
-                // it was actually there for, so it does not come back for the morning.
-                val coversWholeDay = snapshotsOfPrescription.any { it.validTo == null }
-
-                snapshotsOfPrescription
-                    .flatMap { snapshot ->
-                        snapshot.schedule.timesOfDay.mapNotNull { time ->
-                            slotCandidate(
-                                snapshot = snapshot,
-                                date = date,
-                                time = time,
-                                coversWholeDay = coversWholeDay
-                            )
-                        }
-                    }
-                    // One row per slot, even when an edit split the day between two snapshots.
-                    .groupBy { candidate -> candidate.time }
-                    .values
-                    .map { candidates -> candidates.maxWith(slotPrecedence) }
-            }
+        return resolveSlotsForDate(date = date, snapshots = snapshots)
             .map { candidate ->
                 val snapshot = candidate.snapshot
                 val intake = intakeBySlot[
@@ -280,6 +286,72 @@ class PrescriptionRepository(
     }
 
     /**
+     * Counts [date]'s slots and how many of them were taken, or `null` when nothing is due.
+     */
+    private fun buildDayProgress(
+        date: LocalDate,
+        snapshots: List<PrescriptionSnapshot>,
+        takenKeys: Set<DoseSlotKey>
+    ): DoseDayProgress? {
+        val slots = resolveSlotsForDate(date = date, snapshots = snapshots)
+        if (slots.isEmpty()) {
+            return null
+        }
+
+        return DoseDayProgress(
+            date = date,
+            doseCount = slots.size,
+            takenCount = slots.count { candidate ->
+                DoseSlotKey(
+                    snapshotId = candidate.snapshot.id,
+                    date = date,
+                    time = candidate.time
+                ) in takenKeys
+            }
+        )
+    }
+
+    /**
+     * Works out which snapshot renders each dose slot on [date], one entry per slot.
+     */
+    private fun resolveSlotsForDate(
+        date: LocalDate,
+        snapshots: List<PrescriptionSnapshot>
+    ): List<SlotCandidate> {
+        val dayStart = date.atStartOfDay()
+        val dayEnd = date.atTime(LocalTime.MAX)
+
+        return snapshots
+            .filter { snapshot ->
+                snapshot.validFrom <= dayEnd && (snapshot.validTo == null || snapshot.validTo >= dayStart)
+            }
+            .filter { snapshot ->
+                snapshot.schedule.isScheduledOn(date)
+            }
+            .groupBy { snapshot -> snapshot.prescriptionId }
+            .values
+            .flatMap { snapshotsOfPrescription ->
+                val coversWholeDay = snapshotsOfPrescription.any { it.validTo == null }
+
+                snapshotsOfPrescription
+                    .flatMap { snapshot ->
+                        snapshot.schedule.timesOfDay.mapNotNull { time ->
+                            slotCandidate(
+                                snapshot = snapshot,
+                                date = date,
+                                time = time,
+                                coversWholeDay = coversWholeDay
+                            )
+                        }
+                    }
+                    // One row per slot, even when an edit split the day between two snapshots.
+                    .groupBy { candidate -> candidate.time }
+                    .values
+                    .map { candidates -> candidates.maxWith(slotPrecedence) }
+            }
+    }
+
+    /**
      * Decides whether [snapshot] renders the slot at [time] on [date], or `null` when it does not.
      */
     private fun slotCandidate(
@@ -301,6 +373,12 @@ class PrescriptionRepository(
             else -> null
         }
     }
+
+    private fun TakenSlot.toSlotKey(): DoseSlotKey = DoseSlotKey(
+        snapshotId = snapshotId,
+        date = scheduledDate,
+        time = scheduledTime
+    )
 
     private data class SlotCandidate(
         val snapshot: PrescriptionSnapshot,

@@ -99,4 +99,6 @@ interface PrescriptionService {
         taken: Boolean,
         takenAt: LocalDateTime? = null
     )
+
+    suspend fun setDosesTaken(doses: List<DoseChecklistItem>, taken: Boolean)
 }

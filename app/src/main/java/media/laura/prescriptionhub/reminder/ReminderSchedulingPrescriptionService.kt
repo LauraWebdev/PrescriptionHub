@@ -85,4 +85,9 @@ class ReminderSchedulingPrescriptionService(
         delegate.setDoseTaken(snapshotId, scheduledDate, scheduledTime, taken, takenAt)
         scheduler.rearmWindow()
     }
+
+    override suspend fun setDosesTaken(doses: List<DoseChecklistItem>, taken: Boolean) {
+        delegate.setDosesTaken(doses, taken)
+        scheduler.rearmWindow()
+    }
 }

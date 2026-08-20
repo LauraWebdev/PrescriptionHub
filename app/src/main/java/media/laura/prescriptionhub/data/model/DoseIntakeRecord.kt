@@ -23,7 +23,8 @@ import java.time.LocalTime
     ],
     indices = [
         Index(value = ["snapshotId"]),
-        Index(value = ["snapshotId", "scheduledDate", "scheduledTime"], unique = true)
+        Index(value = ["snapshotId", "scheduledDate", "scheduledTime"], unique = true),
+        Index(value = ["scheduledDate"])
     ]
 )
 data class DoseIntakeRecord(

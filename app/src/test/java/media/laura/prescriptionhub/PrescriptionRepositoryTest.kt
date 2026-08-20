@@ -644,6 +644,123 @@ class PrescriptionRepositoryTest {
     }
 
     @Test
+    fun testDoseProgressAgreesWithTheChecklistAcrossAMidDayEdit() = runBlocking {
+        var clock = LocalDateTime.of(2026, 8, 19, 7, 0)
+        val editedService = PrescriptionRepository(
+            database.prescriptionDao(),
+            nowProvider = { clock }
+        )
+
+        val prescriptionId = editedService.addPrescription(
+            Prescription(
+                name = "Drug H",
+                color = 0xFF445566,
+                dosis = "100mg",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                    startDate = anyStartDate
+                )
+            )
+        )
+
+        clock = LocalDateTime.of(2026, 8, 19, 12, 0)
+        val existing = editedService.getPrescription(prescriptionId)!!
+        editedService.updatePrescription(existing.copy(dosis = "150mg"))
+
+        val day = LocalDate.of(2026, 8, 19)
+        val checklist = editedService.getDoseChecklistForDate(day).first()
+        val progress = editedService.getDoseProgressForDates(day, day).first().single()
+
+        // Two snapshots, still one row per slot, and the counts have to match that.
+        assertEquals(2, checklist.size)
+        assertEquals(checklist.size, progress.doseCount)
+        assertEquals(checklist.count { it.taken }, progress.takenCount)
+    }
+
+    @Test
+    fun testDoseProgressIgnoresUntickedRecords() = runBlocking {
+        val day = LocalDate.of(2026, 8, 19)
+        service.addPrescription(
+            Prescription(
+                name = "Drug I",
+                color = 0xFF778899,
+                dosis = "1 pill",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                    startDate = day
+                )
+            )
+        )
+
+        val doses = service.getDoseChecklistForDate(day).first()
+        val morning = doses.first { it.scheduledTime == LocalTime.of(8, 0) }
+
+        service.setDoseTaken(
+            snapshotId = morning.snapshotId,
+            scheduledDate = day,
+            scheduledTime = morning.scheduledTime,
+            taken = true
+        )
+        assertEquals(1, service.getDoseProgressForDates(day, day).first().single().takenCount)
+
+        service.setDoseTaken(
+            snapshotId = morning.snapshotId,
+            scheduledDate = day,
+            scheduledTime = morning.scheduledTime,
+            taken = false
+        )
+
+        val progress = service.getDoseProgressForDates(day, day).first().single()
+        assertEquals(2, progress.doseCount)
+        assertEquals(0, progress.takenCount)
+    }
+
+    @Test
+    fun testSetDosesTakenSharesOneTimestampAndKeepsRowIdentity() = runBlocking {
+        val day = LocalDate.of(2026, 8, 19)
+        now = LocalDateTime.of(2026, 8, 19, 7, 0)
+        service.addPrescription(
+            Prescription(
+                name = "Drug J",
+                color = 0xFF99AABB,
+                dosis = "1 pill",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                    startDate = day
+                )
+            )
+        )
+
+        now = LocalDateTime.of(2026, 8, 19, 9, 30)
+        val doses = service.getDoseChecklistForDate(day).first()
+        service.setDosesTaken(doses, taken = true)
+
+        val afterTaking = service.getDoseChecklistForDate(day).first()
+        assertTrue(afterTaking.all { it.taken })
+        assertEquals(
+            listOf(LocalDateTime.of(2026, 8, 19, 9, 30), LocalDateTime.of(2026, 8, 19, 9, 30)),
+            afterTaking.map { it.takenAt }
+        )
+
+        // Toggling back updates the same rows rather than piling up new ones.
+        service.setDosesTaken(afterTaking, taken = false)
+        val afterClearing = service.getDoseChecklistForDate(day).first()
+        assertEquals(2, afterClearing.size)
+        assertTrue(afterClearing.none { it.taken })
+        assertTrue(afterClearing.all { it.takenAt == null })
+    }
+
+    @Test
+    fun testSetDosesTakenOnAnEmptyListDoesNothing() = runBlocking {
+        service.setDosesTaken(emptyList(), taken = true)
+
+        assertTrue(service.getDoseChecklistForDate(LocalDate.of(2026, 8, 19)).first().isEmpty())
+    }
+
+    @Test
     fun getDoseChecklistBetweenSpansDayBoundaries() = runBlocking {
         service.addPrescription(
             Prescription(

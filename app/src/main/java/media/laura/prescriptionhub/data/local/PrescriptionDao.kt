@@ -15,6 +15,15 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 
 /**
+ * One dose slot that was recorded as taken.
+ */
+data class TakenSlot(
+    val snapshotId: Long,
+    val scheduledDate: LocalDate,
+    val scheduledTime: LocalTime
+)
+
+/**
  * Data Access Object for performing database operations on the prescriptions table.
  */
 @Dao
@@ -47,8 +56,33 @@ interface PrescriptionDao {
     @Query("DELETE FROM prescriptions")
     suspend fun deleteAllPrescriptions()
 
-    @Query("SELECT * FROM prescription_snapshots ORDER BY id ASC")
-    fun getAllPrescriptionSnapshots(): Flow<List<PrescriptionSnapshot>>
+    /**
+     * Observes the snapshots whose validity overlaps [rangeStart]..[rangeEnd].
+     */
+    @Query(
+        """
+        SELECT * FROM prescription_snapshots
+        WHERE validFrom <= :rangeEnd AND (validTo IS NULL OR validTo >= :rangeStart)
+        ORDER BY id ASC
+        """
+    )
+    fun getSnapshotsOverlapping(
+        rangeStart: LocalDateTime,
+        rangeEnd: LocalDateTime
+    ): Flow<List<PrescriptionSnapshot>>
+
+    /** Reads the snapshots overlapping [rangeStart]..[rangeEnd] once. */
+    @Query(
+        """
+        SELECT * FROM prescription_snapshots
+        WHERE validFrom <= :rangeEnd AND (validTo IS NULL OR validTo >= :rangeStart)
+        ORDER BY id ASC
+        """
+    )
+    suspend fun getSnapshotsOverlappingOnce(
+        rangeStart: LocalDateTime,
+        rangeEnd: LocalDateTime
+    ): List<PrescriptionSnapshot>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPrescriptionSnapshot(snapshot: PrescriptionSnapshot): Long
@@ -69,11 +103,25 @@ interface PrescriptionDao {
     fun getDoseIntakeRecordsForDate(date: LocalDate): Flow<List<DoseIntakeRecord>>
 
     @Query("SELECT * FROM dose_intake_records WHERE scheduledDate BETWEEN :startDate AND :endDate")
-    fun getDoseIntakeRecordsBetween(startDate: LocalDate, endDate: LocalDate): Flow<List<DoseIntakeRecord>>
+    suspend fun getDoseIntakeRecordsBetween(startDate: LocalDate, endDate: LocalDate): List<DoseIntakeRecord>
+
+    /**
+     * Observes just the slots recorded as taken between [startDate] and [endDate].
+     */
+    @Query(
+        """
+        SELECT snapshotId, scheduledDate, scheduledTime FROM dose_intake_records
+        WHERE taken = 1 AND scheduledDate BETWEEN :startDate AND :endDate
+        """
+    )
+    fun getTakenSlotsBetween(startDate: LocalDate, endDate: LocalDate): Flow<List<TakenSlot>>
 
     @Query("SELECT * FROM dose_intake_records WHERE snapshotId = :snapshotId AND scheduledDate = :date AND scheduledTime = :time")
     suspend fun getDoseIntakeRecord(snapshotId: Long, date: LocalDate, time: LocalTime): DoseIntakeRecord?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertDoseIntakeRecord(record: DoseIntakeRecord)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertDoseIntakeRecords(records: List<DoseIntakeRecord>)
 }

@@ -7,7 +7,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import media.laura.prescriptionhub.data.local.PrescriptionDao
 import media.laura.prescriptionhub.data.local.PrescriptionDatabase
+import media.laura.prescriptionhub.data.model.DoseIntakeRecord
 import media.laura.prescriptionhub.data.model.Prescription
+import media.laura.prescriptionhub.data.model.PrescriptionSnapshot
 import media.laura.prescriptionhub.data.model.Schedule
 import media.laura.prescriptionhub.data.model.ScheduleType
 import org.junit.After
@@ -21,6 +23,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 
 @RunWith(RobolectricTestRunner::class)
@@ -166,6 +169,153 @@ class PrescriptionDaoTest {
         dao.deletePrescriptionById(id)
         assertNull(dao.getPrescriptionByIdOnce(id))
     }
+
+    @Test
+    fun overlappingSnapshotsCoverOpenAndClosedValidityWindows() = runBlocking {
+        val day = LocalDate.of(2026, 8, 19)
+
+        // Ended the day before the one we ask about.
+        val expired = insertSnapshot(
+            name = "Expired",
+            validFrom = LocalDateTime.of(2026, 8, 10, 9, 0),
+            validTo = LocalDateTime.of(2026, 8, 18, 9, 0)
+        )
+        // Ended during the day.
+        val closedThatDay = insertSnapshot(
+            name = "Closed that day",
+            validFrom = LocalDateTime.of(2026, 8, 10, 9, 0),
+            validTo = LocalDateTime.of(2026, 8, 19, 12, 0)
+        )
+        // Still open.
+        val open = insertSnapshot(
+            name = "Open",
+            validFrom = LocalDateTime.of(2026, 8, 10, 9, 0),
+            validTo = null
+        )
+        // Opens only the day after.
+        val future = insertSnapshot(
+            name = "Future",
+            validFrom = LocalDateTime.of(2026, 8, 20, 9, 0),
+            validTo = null
+        )
+
+        val found = dao.getSnapshotsOverlapping(
+            rangeStart = day.atStartOfDay(),
+            rangeEnd = day.atTime(LocalTime.MAX)
+        ).first()
+
+        assertEquals(listOf(closedThatDay, open), found.map { it.id })
+        assertTrue(expired !in found.map { it.id })
+        assertTrue(future !in found.map { it.id })
+    }
+
+    @Test
+    fun overlappingSnapshotsMatchATimestampStoredWithoutSeconds() = runBlocking {
+        val day = LocalDate.of(2026, 8, 19)
+        val id = insertSnapshot(
+            name = "Zero seconds",
+            validFrom = LocalDateTime.of(2026, 8, 19, 8, 0),
+            validTo = null
+        )
+
+        val found = dao.getSnapshotsOverlapping(
+            rangeStart = day.atStartOfDay(),
+            rangeEnd = day.atTime(LocalTime.MAX)
+        ).first()
+        assertEquals(listOf(id), found.map { it.id })
+
+        // And it must not leak into the day before it began.
+        val dayBefore = dao.getSnapshotsOverlapping(
+            rangeStart = day.minusDays(1).atStartOfDay(),
+            rangeEnd = day.minusDays(1).atTime(LocalTime.MAX)
+        ).first()
+        assertTrue(dayBefore.isEmpty())
+    }
+
+    @Test
+    fun overlappingSnapshotsReadOnceMatchTheObservedQuery() = runBlocking {
+        val day = LocalDate.of(2026, 8, 19)
+        insertSnapshot(
+            name = "Open",
+            validFrom = LocalDateTime.of(2026, 8, 19, 8, 0),
+            validTo = null
+        )
+
+        val observed = dao.getSnapshotsOverlapping(day.atStartOfDay(), day.atTime(LocalTime.MAX)).first()
+        val once = dao.getSnapshotsOverlappingOnce(day.atStartOfDay(), day.atTime(LocalTime.MAX))
+
+        assertEquals(observed, once)
+    }
+
+    @Test
+    fun takenSlotsBetweenReportsOnlyTickedRowsInRange() = runBlocking {
+        val snapshotId = insertSnapshot(
+            name = "Metformin",
+            validFrom = LocalDateTime.of(2026, 8, 1, 8, 0),
+            validTo = null
+        )
+        val inRange = LocalDate.of(2026, 8, 19)
+
+        dao.upsertDoseIntakeRecord(
+            DoseIntakeRecord(
+                snapshotId = snapshotId,
+                scheduledDate = inRange,
+                scheduledTime = LocalTime.of(8, 0),
+                taken = true,
+                takenAt = inRange.atTime(8, 3)
+            )
+        )
+        // Un-ticking leaves the row behind with taken = 0; it must not be counted.
+        dao.upsertDoseIntakeRecord(
+            DoseIntakeRecord(
+                snapshotId = snapshotId,
+                scheduledDate = inRange,
+                scheduledTime = LocalTime.of(20, 0),
+                taken = false,
+                takenAt = null
+            )
+        )
+        // Outside the range.
+        dao.upsertDoseIntakeRecord(
+            DoseIntakeRecord(
+                snapshotId = snapshotId,
+                scheduledDate = LocalDate.of(2026, 8, 25),
+                scheduledTime = LocalTime.of(8, 0),
+                taken = true,
+                takenAt = LocalDate.of(2026, 8, 25).atTime(8, 1)
+            )
+        )
+
+        val slots = dao.getTakenSlotsBetween(
+            startDate = LocalDate.of(2026, 8, 18),
+            endDate = LocalDate.of(2026, 8, 20)
+        ).first()
+
+        assertEquals(1, slots.size)
+        assertEquals(snapshotId, slots.single().snapshotId)
+        assertEquals(inRange, slots.single().scheduledDate)
+        assertEquals(LocalTime.of(8, 0), slots.single().scheduledTime)
+    }
+
+    private suspend fun insertSnapshot(
+        name: String,
+        validFrom: LocalDateTime,
+        validTo: LocalDateTime?
+    ): Long = dao.insertPrescriptionSnapshot(
+        PrescriptionSnapshot(
+            prescriptionId = 1L,
+            name = name,
+            color = 0xFF102030,
+            dosis = "1 pill",
+            schedule = Schedule(
+                scheduleType = ScheduleType.DAILY,
+                timesOfDay = listOf(LocalTime.of(8, 0)),
+                startDate = LocalDate.of(2026, 8, 1)
+            ),
+            validFrom = validFrom,
+            validTo = validTo
+        )
+    )
 
     @Test
     fun testGetAllPrescriptions() = runBlocking {

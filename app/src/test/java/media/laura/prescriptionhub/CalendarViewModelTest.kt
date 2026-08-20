@@ -27,6 +27,7 @@ import org.robolectric.RobolectricTestRunner
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -35,10 +36,6 @@ class CalendarViewModelTest {
     private lateinit var database: PrescriptionDatabase
     private lateinit var repository: PrescriptionRepository
 
-    /**
-     * Two pinned clocks: the repository writes as of the 17th, so snapshots are valid from then,
-     * while the view model's present is the 19th.
-     */
     private val insertedAt = LocalDateTime.of(2026, 8, 17, 7, 0)
     private var now = LocalDateTime.of(2026, 8, 19, 18, 0)
 
@@ -176,12 +173,16 @@ class CalendarViewModelTest {
         assertEquals(LocalDate.of(2026, 8, 20), state.today)
     }
 
-    private fun viewModel() = CalendarViewModel(repository, nowProvider = { now })
+    private fun viewModel() = CalendarViewModel(
+        repository,
+        nowProvider = { now },
+        listDebounceMillis = 0
+    )
 
     private suspend fun awaitState(
         viewModel: CalendarViewModel,
         predicate: (CalendarUiState) -> Boolean = { true }
-    ): CalendarUiState = withTimeout(AWAIT_TIMEOUT_MILLIS) {
+    ): CalendarUiState = withTimeout(AWAIT_TIMEOUT_MILLIS.milliseconds) {
         viewModel.uiState.first { !it.isLoading && predicate(it) }
     }
 
