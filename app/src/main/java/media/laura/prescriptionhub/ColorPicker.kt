@@ -43,29 +43,34 @@ import androidx.compose.ui.unit.dp
 import media.laura.prescriptionhub.ui.theme.PrescriptionHubTheme
 
 /**
+ * A preset color together with the accessibility label that names it.
+ *
+ * @param color The swatch color.
+ * @param name Human-readable label.
+ */
+data class PrescriptionSwatch(val color: Color, val name: String)
+
+/**
  * Preset swatches offered by the color picker.
  */
-val prescriptionColors: List<Color> = listOf(
-    Color(0xFFE53935), // red
-    Color(0xFFF4511E), // deep orange
-    Color(0xFFFB8C00), // orange
-    Color(0xFFFDD835), // yellow
-    Color(0xFF7CB342), // light green
-    Color(0xFF43A047), // green
-    Color(0xFF00897B), // teal
-    Color(0xFF00ACC1), // cyan
-    Color(0xFF1E88E5), // blue
-    Color(0xFF3949AB), // indigo
-    Color(0xFF8E24AA), // purple
-    Color(0xFFD81B60), // pink
-    Color(0xFF6D4C41)  // brown
+val prescriptionSwatches: List<PrescriptionSwatch> = listOf(
+    PrescriptionSwatch(Color(0xFFE53935), "Red"),
+    PrescriptionSwatch(Color(0xFFF4511E), "Deep orange"),
+    PrescriptionSwatch(Color(0xFFFB8C00), "Orange"),
+    PrescriptionSwatch(Color(0xFFFDD835), "Yellow"),
+    PrescriptionSwatch(Color(0xFF7CB342), "Light green"),
+    PrescriptionSwatch(Color(0xFF43A047), "Green"),
+    PrescriptionSwatch(Color(0xFF00897B), "Teal"),
+    PrescriptionSwatch(Color(0xFF00ACC1), "Cyan"),
+    PrescriptionSwatch(Color(0xFF1E88E5), "Blue"),
+    PrescriptionSwatch(Color(0xFF3949AB), "Indigo"),
+    PrescriptionSwatch(Color(0xFF8E24AA), "Purple"),
+    PrescriptionSwatch(Color(0xFFD81B60), "Pink"),
+    PrescriptionSwatch(Color(0xFF6D4C41), "Brown")
 )
 
-/** Accessibility labels for [prescriptionColors]. */
-private val prescriptionColorNames: List<String> = listOf(
-    "Red", "Deep orange", "Orange", "Yellow", "Light green", "Green", "Teal",
-    "Cyan", "Blue", "Indigo", "Purple", "Pink", "Brown"
-)
+/** The preset colors of [prescriptionSwatches], in the same order. */
+val prescriptionColors: List<Color> = prescriptionSwatches.map { it.color }
 
 /** Converts a Compose [Color] into the 32-bit ARGB [Long] stored on a prescription. */
 fun Color.toStoredLong(): Long = toArgb().toLong() and 0xFFFFFFFFL
@@ -99,16 +104,16 @@ fun ColorSwatchPicker(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        prescriptionColors.forEachIndexed { index, swatch ->
+        prescriptionSwatches.forEach { swatch ->
             Surface(
-                onClick = { onSelect(swatch) },
+                onClick = { onSelect(swatch.color) },
                 shape = CircleShape,
-                color = swatch,
+                color = swatch.color,
                 modifier = Modifier
                     .size(40.dp)
-                    .semantics { contentDescription = prescriptionColorNames[index] }
+                    .semantics { contentDescription = swatch.name }
             ) {
-                if (swatch.toStoredLong() == selected.toStoredLong()) {
+                if (swatch.color.toStoredLong() == selected.toStoredLong()) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -116,7 +121,7 @@ fun ColorSwatchPicker(
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
-                            tint = checkColorOn(swatch),
+                            tint = checkColorOn(swatch.color),
                             modifier = Modifier.size(22.dp)
                         )
                     }
