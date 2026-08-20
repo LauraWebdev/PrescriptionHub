@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -124,5 +125,5 @@ enum class AppDestinations(
 ) {
     TODAY("Today", Icons.Default.Today),
     CALENDAR("Calendar", Icons.Default.History),
-    PRESCRIPTION("Prescription", Icons.Default.Checklist),
+    PRESCRIPTION("Prescription", Icons.Default.Medication),
 }
