@@ -2,6 +2,7 @@ package media.laura.prescriptionhub.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import media.laura.prescriptionhub.data.local.PrescriptionDao
@@ -105,6 +106,34 @@ class PrescriptionRepository(
                 intakeRecords = intakeRecords
             )
         }
+    }
+
+    override suspend fun getDoseChecklistBetween(
+        start: LocalDateTime,
+        end: LocalDateTime
+    ): List<DoseChecklistItem> {
+        if (end < start) {
+            return emptyList()
+        }
+
+        val startDate = start.toLocalDate()
+        val endDate = end.toLocalDate()
+        val snapshots = prescriptionDao.getAllPrescriptionSnapshots().first()
+        val intakeByDate = prescriptionDao.getDoseIntakeRecordsBetween(startDate, endDate)
+            .first()
+            .groupBy { it.scheduledDate }
+
+        return generateSequence(startDate) { previous ->
+            previous.plusDays(1).takeIf { it <= endDate }
+        }.flatMap { date ->
+            buildDoseChecklistForDate(
+                date = date,
+                snapshots = snapshots,
+                intakeRecords = intakeByDate[date].orEmpty()
+            ).asSequence()
+        }.filter { dose ->
+            dose.scheduledDateTime >= start && dose.scheduledDateTime <= end
+        }.toList()
     }
 
     override fun getDoseProgressForDates(
@@ -243,7 +272,8 @@ class PrescriptionRepository(
                     scheduledDate = date,
                     scheduledTime = candidate.time,
                     taken = intake?.taken ?: false,
-                    takenAt = intake?.takenAt
+                    takenAt = intake?.takenAt,
+                    reminderLeadMinutes = snapshot.schedule.reminderLeadMinutes
                 )
             }
             .sorted()

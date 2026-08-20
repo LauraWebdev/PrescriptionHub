@@ -624,4 +624,158 @@ class PrescriptionRepositoryTest {
 
         assertTrue(progress.isEmpty())
     }
+
+    @Test
+    fun getDoseChecklistBetweenSpansDayBoundaries() = runBlocking {
+        service.addPrescription(
+            Prescription(
+                name = "Metformin",
+                color = 0xFF4CAF50,
+                dosis = "850mg",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                    startDate = LocalDate.of(2026, 8, 19)
+                )
+            )
+        )
+
+        val doses = service.getDoseChecklistBetween(
+            start = LocalDateTime.of(2026, 8, 19, 12, 0),
+            end = LocalDateTime.of(2026, 8, 20, 12, 0)
+        )
+
+        assertEquals(
+            listOf(
+                LocalDateTime.of(2026, 8, 19, 20, 0),
+                LocalDateTime.of(2026, 8, 20, 8, 0)
+            ),
+            doses.map { it.scheduledDateTime }
+        )
+    }
+
+    @Test
+    fun getDoseChecklistBetweenIncludesBothBounds() = runBlocking {
+        service.addPrescription(
+            Prescription(
+                name = "Metformin",
+                color = 0xFF4CAF50,
+                dosis = "850mg",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                    startDate = LocalDate.of(2026, 8, 19)
+                )
+            )
+        )
+
+        val doses = service.getDoseChecklistBetween(
+            start = LocalDateTime.of(2026, 8, 19, 8, 0),
+            end = LocalDateTime.of(2026, 8, 19, 20, 0)
+        )
+
+        assertEquals(2, doses.size)
+    }
+
+    @Test
+    fun getDoseChecklistBetweenReportsNothingForAnInvertedRange() = runBlocking {
+        service.addPrescription(
+            Prescription(
+                name = "Metformin",
+                color = 0xFF4CAF50,
+                dosis = "850mg",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(8, 0)),
+                    startDate = LocalDate.of(2026, 8, 19)
+                )
+            )
+        )
+
+        val doses = service.getDoseChecklistBetween(
+            start = LocalDateTime.of(2026, 8, 20, 0, 0),
+            end = LocalDateTime.of(2026, 8, 19, 0, 0)
+        )
+
+        assertTrue(doses.isEmpty())
+    }
+
+    @Test
+    fun getDoseChecklistBetweenSkipsDaysTheScheduleDoesNotCover() = runBlocking {
+        service.addPrescription(
+            Prescription(
+                name = "Metformin",
+                color = 0xFF4CAF50,
+                dosis = "850mg",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.SPECIFIC_DAYS_OF_WEEK,
+                    daysOfWeek = listOf(DayOfWeek.WEDNESDAY),
+                    timesOfDay = listOf(LocalTime.of(8, 0)),
+                    startDate = LocalDate.of(2026, 8, 19)
+                )
+            )
+        )
+
+        // 2026-08-19 is a Wednesday, 2026-08-20 a Thursday.
+        val doses = service.getDoseChecklistBetween(
+            start = LocalDateTime.of(2026, 8, 19, 0, 0),
+            end = LocalDateTime.of(2026, 8, 21, 23, 59)
+        )
+
+        assertEquals(listOf(LocalDate.of(2026, 8, 19)), doses.map { it.scheduledDate })
+    }
+
+    @Test
+    fun getDoseChecklistBetweenCarriesTheReminderLeadTime() = runBlocking {
+        service.addPrescription(
+            Prescription(
+                name = "Metformin",
+                color = 0xFF4CAF50,
+                dosis = "850mg",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(8, 0)),
+                    startDate = LocalDate.of(2026, 8, 19),
+                    reminderLeadMinutes = 30
+                )
+            )
+        )
+
+        val doses = service.getDoseChecklistBetween(
+            start = LocalDateTime.of(2026, 8, 19, 0, 0),
+            end = LocalDateTime.of(2026, 8, 19, 23, 59)
+        )
+
+        assertEquals(30, doses.single().reminderLeadMinutes)
+    }
+
+    @Test
+    fun getDoseChecklistBetweenReflectsTheTakenState() = runBlocking {
+        val id = service.addPrescription(
+            Prescription(
+                name = "Metformin",
+                color = 0xFF4CAF50,
+                dosis = "850mg",
+                schedule = Schedule(
+                    scheduleType = ScheduleType.DAILY,
+                    timesOfDay = listOf(LocalTime.of(8, 0)),
+                    startDate = LocalDate.of(2026, 8, 19)
+                )
+            )
+        )
+        val snapshot = database.prescriptionDao().getOpenSnapshotForPrescription(id)!!
+        service.setDoseTaken(
+            snapshotId = snapshot.id,
+            scheduledDate = LocalDate.of(2026, 8, 19),
+            scheduledTime = LocalTime.of(8, 0),
+            taken = true
+        )
+
+        val doses = service.getDoseChecklistBetween(
+            start = LocalDateTime.of(2026, 8, 19, 0, 0),
+            end = LocalDateTime.of(2026, 8, 19, 23, 59)
+        )
+
+        assertTrue(doses.single().taken)
+    }
 }

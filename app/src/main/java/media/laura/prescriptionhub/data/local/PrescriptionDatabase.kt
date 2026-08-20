@@ -20,7 +20,7 @@ import media.laura.prescriptionhub.data.model.PrescriptionSnapshot
         PrescriptionSnapshot::class,
         DoseIntakeRecord::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -102,6 +102,13 @@ abstract class PrescriptionDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `prescriptions` ADD COLUMN `reminderLeadMinutes` INTEGER")
+                db.execSQL("ALTER TABLE `prescription_snapshots` ADD COLUMN `schedule_reminderLeadMinutes` INTEGER")
+            }
+        }
+
         @Volatile
         private var INSTANCE: PrescriptionDatabase? = null
 
@@ -111,7 +118,7 @@ abstract class PrescriptionDatabase : RoomDatabase() {
                     context.applicationContext,
                     PrescriptionDatabase::class.java,
                     "prescription_database"
-                ).addMigrations(MIGRATION_1_2).build()
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
                 INSTANCE = instance
                 instance
             }

@@ -70,6 +70,14 @@ interface PrescriptionService {
     fun getDoseChecklistForDate(date: LocalDate): Flow<List<DoseChecklistItem>>
 
     /**
+     * Fetches every dose slot due between [start] and [end] once, both bounds inclusive.
+     */
+    suspend fun getDoseChecklistBetween(
+        start: LocalDateTime,
+        end: LocalDateTime
+    ): List<DoseChecklistItem>
+
+    /**
      * Observes how much of each day between [startDate] and [endDate] has been taken.
      *
      * Days without any scheduled dose are left out.

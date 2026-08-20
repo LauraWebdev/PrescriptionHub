@@ -17,8 +17,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -38,10 +42,15 @@ fun TodayScreen(
     viewModel: TodayViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    var warningHidden by remember { mutableStateOf(false) }
+    var canScheduleExact by remember { mutableStateOf(true) }
 
     // Update date on resume if the date significantly changed.
+    // Also check alarms permission after coming back from settings.
     LifecycleResumeEffect(Unit) {
         viewModel.refreshDate()
+        canScheduleExact = canScheduleExactAlarms(context)
         onPauseOrDispose {}
     }
 
@@ -50,6 +59,9 @@ fun TodayScreen(
         isLoading = uiState.isLoading,
         onDoseTakenChange = viewModel::setDoseTaken,
         onCheckAll = viewModel::checkAll,
+        showExactAlarmWarning = !canScheduleExact && !warningHidden,
+        onGrantExactAlarm = { openExactAlarmSettings(context) },
+        onDismissExactAlarmWarning = { warningHidden = true },
         modifier = modifier
     )
 }
@@ -61,6 +73,9 @@ fun TodayScreen(
  * @param isLoading Whether the first database result is still pending.
  * @param onDoseTakenChange Invoked with a dose and its new taken state.
  * @param onCheckAll Invoked with the group whose open doses should all be marked as taken.
+ * @param showExactAlarmWarning Whether to warn that reminders cannot be delivered punctually.
+ * @param onGrantExactAlarm Invoked when the user wants to grant the exact alarm permission.
+ * @param onDismissExactAlarmWarning Invoked when the user hides that warning.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +84,9 @@ fun TodayScreenContent(
     isLoading: Boolean = false,
     onDoseTakenChange: (DoseChecklistItem, Boolean) -> Unit = { _, _ -> },
     onCheckAll: (DoseTimeGroup) -> Unit = {},
+    showExactAlarmWarning: Boolean = false,
+    onGrantExactAlarm: () -> Unit = {},
+    onDismissExactAlarmWarning: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val allTaken = groups.isNotEmpty() && groups.all { it.isComplete }
@@ -86,6 +104,13 @@ fun TodayScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            AnimatedVisibility(visible = showExactAlarmWarning) {
+                ExactAlarmBanner(
+                    onGrant = onGrantExactAlarm,
+                    onDismiss = onDismissExactAlarmWarning
+                )
+            }
+
             AnimatedVisibility(visible = allTaken) {
                 TodayDoneBanner()
             }
@@ -189,6 +214,17 @@ fun TodayScreenAllTakenPreview() {
 fun TodayScreenEmptyPreview() {
     PrescriptionHubTheme {
         TodayScreenContent(groups = emptyList())
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TodayScreenExactAlarmWarningPreview() {
+    PrescriptionHubTheme {
+        TodayScreenContent(
+            groups = previewGroups(lateGroupTaken = false),
+            showExactAlarmWarning = true
+        )
     }
 }
 

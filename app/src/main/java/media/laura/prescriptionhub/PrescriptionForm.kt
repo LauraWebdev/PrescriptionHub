@@ -107,6 +107,16 @@ private val dateFormatter: DateTimeFormatter =
 
 fun formatStartDate(date: LocalDate): String = date.format(dateFormatter)
 
+/** The reminder lead times offered in the form. `null` means no reminder. */
+val reminderLeadOptions: List<Int?> = listOf(null, 5, 10, 30, 60)
+
+/** Labels a reminder lead time of [minutes], where `null` means no reminder. */
+fun formatReminderLead(minutes: Int?): String = when (minutes) {
+    null -> "Never"
+    60 -> "1 hour before"
+    else -> "$minutes minutes before"
+}
+
 /** Saver that persists a date as an ISO string. */
 private val localDateSaver = Saver<LocalDate, String>(
     save = { it.toString() },
@@ -157,7 +167,12 @@ fun PrescriptionForm(
         initialPrescription?.schedule?.timesOfDay.orEmpty().toMutableStateList()
     }
 
+    var reminderLeadMinutes by rememberSaveable(initialPrescription) {
+        mutableStateOf(initialPrescription?.schedule?.reminderLeadMinutes)
+    }
+
     var typeMenuExpanded by remember { mutableStateOf(false) }
+    var reminderMenuExpanded by remember { mutableStateOf(false) }
     var showCustomColorDialog by rememberSaveable { mutableStateOf(false) }
     var showTimePicker by rememberSaveable { mutableStateOf(false) }
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
@@ -344,6 +359,53 @@ fun PrescriptionForm(
             }
         }
 
+        FormSection(title = "Reminder") {
+            ExposedDropdownMenuBox(
+                expanded = reminderMenuExpanded,
+                onExpandedChange = { reminderMenuExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = formatReminderLead(reminderLeadMinutes),
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(text = "Remind me") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = reminderMenuExpanded)
+                    },
+                    modifier = Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        .fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = reminderMenuExpanded,
+                    onDismissRequest = { reminderMenuExpanded = false }
+                ) {
+                    reminderLeadOptions.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(text = formatReminderLead(option)) },
+                            onClick = {
+                                reminderLeadMinutes = option
+                                reminderMenuExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            AnimatedVisibility(
+                visible = reminderLeadMinutes != null,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Text(
+                    text = "The reminder stays on screen until you mark the dose as taken, " +
+                            "up to five minutes after it is due.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
         Button(
             onClick = {
                 onSave(
@@ -365,6 +427,7 @@ fun PrescriptionForm(
                                 null
                             },
                             timesOfDay = times.sorted(),
+                            reminderLeadMinutes = reminderLeadMinutes,
                             startDate = startDate
                         )
                     )
