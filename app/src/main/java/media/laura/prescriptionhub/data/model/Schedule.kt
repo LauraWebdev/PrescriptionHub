@@ -12,7 +12,7 @@ import java.time.temporal.ChronoUnit
  * @param daysOfWeek Specific days of the week when scheduleType is SPECIFIC_DAYS_OF_WEEK.
  * @param everyXDays Interval in days when scheduleType is EVERY_X_DAYS.
  * @param timesOfDay List of times during the day when the prescription should be taken (e.g., 08:00, 14:00, 23:00).
- * @param startDate Reference/start date used to compute intervals for EVERY_X_DAYS. Defaults to current date.
+ * @param startDate Reference/start date used to compute intervals for EVERY_X_DAYS.
  * @param reminderLeadMinutes How many minutes before a dose to remind, or `null` for no reminder.
  */
 data class Schedule(
@@ -20,7 +20,7 @@ data class Schedule(
     val daysOfWeek: List<DayOfWeek> = emptyList(),
     val everyXDays: Int? = null,
     val timesOfDay: List<LocalTime> = emptyList(),
-    val startDate: LocalDate = LocalDate.now(),
+    val startDate: LocalDate,
     val reminderLeadMinutes: Int? = null
 ) {
     /**

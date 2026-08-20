@@ -10,12 +10,14 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 class ScheduleTest {
+    private val anyStartDate = LocalDate.of(2026, 8, 19)
 
     @Test
     fun testDailySchedule() {
         val schedule = Schedule(
             scheduleType = ScheduleType.DAILY,
-            timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(23, 0))
+            timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(23, 0)),
+            startDate = anyStartDate
         )
 
         // Should be active on any date
@@ -29,7 +31,8 @@ class ScheduleTest {
         val schedule = Schedule(
             scheduleType = ScheduleType.SPECIFIC_DAYS_OF_WEEK,
             daysOfWeek = listOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
-            timesOfDay = listOf(LocalTime.of(13, 0), LocalTime.MIDNIGHT)
+            timesOfDay = listOf(LocalTime.of(13, 0), LocalTime.MIDNIGHT),
+            startDate = anyStartDate
         )
 
         // 2026-08-17 is Monday
@@ -84,14 +87,16 @@ class ScheduleTest {
     fun testInvalidEveryXDaysSchedule() {
         val scheduleNoInterval = Schedule(
             scheduleType = ScheduleType.EVERY_X_DAYS,
-            everyXDays = null
+            everyXDays = null,
+            startDate = anyStartDate
         )
-        assertFalse(scheduleNoInterval.isScheduledOn(LocalDate.now()))
+        assertFalse(scheduleNoInterval.isScheduledOn(anyStartDate))
 
         val scheduleZeroInterval = Schedule(
             scheduleType = ScheduleType.EVERY_X_DAYS,
-            everyXDays = 0
+            everyXDays = 0,
+            startDate = anyStartDate
         )
-        assertFalse(scheduleZeroInterval.isScheduledOn(LocalDate.now()))
+        assertFalse(scheduleZeroInterval.isScheduledOn(anyStartDate))
     }
 }

@@ -21,8 +21,8 @@ import java.time.ZoneId
 class DoseReminderScheduler(
     private val context: Context,
     private val serviceProvider: () -> PrescriptionService,
-    private val zoneId: ZoneId = ZoneId.systemDefault(),
-    private val nowProvider: () -> LocalDateTime = { LocalDateTime.now() }
+    private val nowProvider: () -> LocalDateTime,
+    private val zoneId: ZoneId = ZoneId.systemDefault()
 ) {
     private val alarmManager: AlarmManager? =
         context.getSystemService(AlarmManager::class.java)

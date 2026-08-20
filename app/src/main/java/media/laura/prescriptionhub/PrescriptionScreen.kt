@@ -36,6 +36,7 @@ import media.laura.prescriptionhub.data.model.Schedule
 import media.laura.prescriptionhub.data.model.ScheduleType
 import media.laura.prescriptionhub.ui.theme.PrescriptionHubTheme
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalTime
 
 @Composable
@@ -47,6 +48,7 @@ fun PrescriptionScreen(
 
     PrescriptionScreenContent(
         prescriptions = uiState.prescriptions,
+        today = uiState.today,
         isLoading = uiState.isLoading,
         onSavePrescription = viewModel::savePrescription,
         onDeletePrescription = viewModel::deletePrescription,
@@ -58,6 +60,7 @@ fun PrescriptionScreen(
  * Stateless prescription tab, so it can be previewed without a database.
  *
  * @param prescriptions The prescriptions to list.
+ * @param today The current date.
  * @param isLoading Whether the prescriptions are still being loaded.
  * @param onSavePrescription Invoked with a new or edited prescription that should be persisted.
  * @param onDeletePrescription Invoked once the user confirmed deleting a prescription.
@@ -66,6 +69,7 @@ fun PrescriptionScreen(
 @Composable
 fun PrescriptionScreenContent(
     prescriptions: List<Prescription>,
+    today: LocalDate,
     isLoading: Boolean = false,
     onSavePrescription: (Prescription) -> Unit = {},
     onDeletePrescription: (Prescription) -> Unit = {},
@@ -141,6 +145,7 @@ fun PrescriptionScreenContent(
     if (showPrescriptionForm) {
         ModalBottomSheet(onDismissRequest = { closeForm() }) {
             PrescriptionForm(
+                today = today,
                 modifier = Modifier.padding(bottom = 24.dp),
                 initialPrescription = editingPrescription,
                 onSave = { prescription ->
@@ -183,11 +188,13 @@ fun PrescriptionScreenContent(
     }
 }
 
+private val previewToday = LocalDate.of(2026, 8, 19)
+
 @Preview(showBackground = true)
 @Composable
 fun PrescriptionScreenEmptyPreview() {
     PrescriptionHubTheme {
-        PrescriptionScreenContent(prescriptions = emptyList())
+        PrescriptionScreenContent(prescriptions = emptyList(), today = previewToday)
     }
 }
 
@@ -204,7 +211,8 @@ fun PrescriptionScreenPreview() {
                     dosis = "850mg",
                     schedule = Schedule(
                         scheduleType = ScheduleType.DAILY,
-                        timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(23, 0))
+                        timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(23, 0)),
+                        startDate = previewToday
                     )
                 ),
                 Prescription(
@@ -215,7 +223,8 @@ fun PrescriptionScreenPreview() {
                     schedule = Schedule(
                         scheduleType = ScheduleType.EVERY_X_DAYS,
                         everyXDays = 3,
-                        timesOfDay = listOf(LocalTime.of(8, 0))
+                        timesOfDay = listOf(LocalTime.of(8, 0)),
+                        startDate = previewToday
                     )
                 ),
                 Prescription(
@@ -226,10 +235,12 @@ fun PrescriptionScreenPreview() {
                     schedule = Schedule(
                         scheduleType = ScheduleType.SPECIFIC_DAYS_OF_WEEK,
                         daysOfWeek = listOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
-                        timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(23, 0))
+                        timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(23, 0)),
+                        startDate = previewToday
                     )
                 )
-            )
+            ),
+            today = previewToday
         )
     }
 }

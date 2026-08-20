@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import media.laura.prescriptionhub.data.model.DoseChecklistItem
@@ -52,7 +53,7 @@ fun getDayOfMonthSuffix(day: Int): String {
     }
 }
 
-fun formatCalendarDate(date: LocalDate, today: LocalDate = LocalDate.now()): String {
+fun formatCalendarDate(date: LocalDate, today: LocalDate): String {
     val day = date.dayOfMonth
     val suffix = getDayOfMonthSuffix(day)
     val month = date.month.getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
@@ -76,9 +77,15 @@ fun CalendarScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // Re-read the clock on resume, so the day and the missed/upcoming split do not go stale.
+    LifecycleResumeEffect(Unit) {
+        viewModel.refresh()
+        onPauseOrDispose {}
+    }
+
     CalendarScreenContent(
         selectedDate = uiState.selectedDate,
-        today = uiState.today,
+        now = uiState.now,
         groups = uiState.groups,
         progressByDate = uiState.progressByDate,
         isLoading = uiState.isLoading,
@@ -93,11 +100,10 @@ fun CalendarScreen(
  * Calendar summary
  *
  * @param selectedDate The day being shown.
- * @param today The current date, marking the title and deciding which doses count as missed.
+ * @param now The current moment.
  * @param groups The selected day's doses, one group per time of day.
  * @param progressByDate Completion per day for the ring row.
  * @param isLoading Whether the first database result is still pending.
- * @param now The current moment, deciding which of the day's doses are still due.
  * @param onDateSelected Invoked with a day picked from the ring row.
  * @param onPreviousDay Invoked by the app bar's back arrow.
  * @param onNextDay Invoked by the app bar's forward arrow.
@@ -106,16 +112,16 @@ fun CalendarScreen(
 @Composable
 fun CalendarScreenContent(
     selectedDate: LocalDate,
-    today: LocalDate,
+    now: LocalDateTime,
     groups: List<DoseTimeGroup>,
     progressByDate: Map<LocalDate, DoseDayProgress> = emptyMap(),
     isLoading: Boolean = false,
-    now: LocalDateTime = LocalDateTime.now(),
     onDateSelected: (LocalDate) -> Unit = {},
     onPreviousDay: () -> Unit = {},
     onNextDay: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val today = now.toLocalDate()
     var showDayPicker by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
@@ -264,7 +270,6 @@ fun CalendarScreenPreview() {
     PrescriptionHubTheme {
         CalendarScreenContent(
             selectedDate = previewDay,
-            today = previewToday,
             groups = previewGroups(),
             progressByDate = previewProgress(),
             now = previewToday.atTime(18, 0)
@@ -278,7 +283,6 @@ fun CalendarScreenEmptyPreview() {
     PrescriptionHubTheme {
         CalendarScreenContent(
             selectedDate = previewToday.plusDays(3),
-            today = previewToday,
             groups = emptyList(),
             progressByDate = previewProgress(),
             now = previewToday.atTime(18, 0)
@@ -292,7 +296,6 @@ fun CalendarScreenDarkPreview() {
     PrescriptionHubTheme {
         CalendarScreenContent(
             selectedDate = previewDay,
-            today = previewToday,
             groups = previewGroups(),
             progressByDate = previewProgress(),
             now = previewToday.atTime(18, 0)

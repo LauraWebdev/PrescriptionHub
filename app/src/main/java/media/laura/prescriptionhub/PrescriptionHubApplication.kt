@@ -26,7 +26,7 @@ class PrescriptionHubApplication : Application() {
     }
 
     private val repository: PrescriptionService by lazy {
-        PrescriptionRepository(database.prescriptionDao())
+        PrescriptionRepository(database.prescriptionDao(), nowProvider = nowProvider)
     }
 
     val reminderScheduler: DoseReminderScheduler by lazy {

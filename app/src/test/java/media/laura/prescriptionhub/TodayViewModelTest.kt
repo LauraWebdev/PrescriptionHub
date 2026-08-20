@@ -29,6 +29,7 @@ import org.robolectric.RobolectricTestRunner
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -38,7 +39,7 @@ class TodayViewModelTest {
     private lateinit var repository: PrescriptionRepository
 
     private var now = LocalDateTime.of(2026, 8, 19, 7, 0)
-    private val date = LocalDate.of(2026, 8, 19)
+    private val date: LocalDate get() = now.toLocalDate()
 
     @Before
     fun setup() {
@@ -61,7 +62,7 @@ class TodayViewModelTest {
     fun dosesAreGroupedByTimeOfDay() = runBlocking {
         addPrescription("Metformin", LocalTime.of(8, 0), LocalTime.of(23, 0))
         addPrescription("Candecor", LocalTime.of(8, 0))
-        val viewModel = TodayViewModel(repository, todayProvider = { date })
+        val viewModel = TodayViewModel(repository, nowProvider = { now })
 
         val groups = awaitGroups(viewModel) { it.size == 2 }
 
@@ -72,7 +73,7 @@ class TodayViewModelTest {
     @Test
     fun checkingADoseStoresTheTakenTimestamp() = runBlocking {
         addPrescription("Metformin", LocalTime.of(8, 0))
-        val viewModel = TodayViewModel(repository, todayProvider = { date })
+        val viewModel = TodayViewModel(repository, nowProvider = { now })
         now = LocalDateTime.of(2026, 8, 19, 8, 4)
 
         viewModel.setDoseTaken(dose(viewModel, "Metformin"), taken = true)
@@ -85,7 +86,7 @@ class TodayViewModelTest {
     @Test
     fun uncheckingADoseClearsTheTakenTimestamp() = runBlocking {
         addPrescription("Metformin", LocalTime.of(8, 0))
-        val viewModel = TodayViewModel(repository, todayProvider = { date })
+        val viewModel = TodayViewModel(repository, nowProvider = { now })
 
         viewModel.setDoseTaken(dose(viewModel, "Metformin"), taken = true)
         awaitDose(viewModel, "Metformin") { it.taken }
@@ -101,7 +102,7 @@ class TodayViewModelTest {
         addPrescription("Metformin", LocalTime.of(8, 0))
         addPrescription("Candecor", LocalTime.of(8, 0))
         addPrescription("Progesteron", LocalTime.of(23, 0))
-        val viewModel = TodayViewModel(repository, todayProvider = { date })
+        val viewModel = TodayViewModel(repository, nowProvider = { now })
 
         viewModel.checkAll(awaitGroups(viewModel) { it.size == 2 }.first())
 
@@ -114,7 +115,7 @@ class TodayViewModelTest {
     fun checkAllKeepsTheEarlierTimestampOfAlreadyTakenDoses() = runBlocking {
         addPrescription("Metformin", LocalTime.of(8, 0))
         addPrescription("Candecor", LocalTime.of(8, 0))
-        val viewModel = TodayViewModel(repository, todayProvider = { date })
+        val viewModel = TodayViewModel(repository, nowProvider = { now })
 
         now = LocalDateTime.of(2026, 8, 19, 8, 4)
         viewModel.setDoseTaken(dose(viewModel, "Metformin"), taken = true)
@@ -136,7 +137,7 @@ class TodayViewModelTest {
         addPrescription("Metformin", LocalTime.of(8, 0))
         addPrescription("Candecor", LocalTime.of(8, 0))
         addPrescription("Progesteron", LocalTime.of(23, 0))
-        val viewModel = TodayViewModel(repository, todayProvider = { date })
+        val viewModel = TodayViewModel(repository, nowProvider = { now })
 
         val before = awaitGroups(viewModel) { it.size == 2 }
         before.forEach { viewModel.checkAll(it) }
@@ -150,7 +151,7 @@ class TodayViewModelTest {
     @Test
     fun addingAPrescriptionUpdatesTheChecklistWithoutReload() = runBlocking {
         addPrescription("Gynokadin", LocalTime.of(23, 0))
-        val viewModel = TodayViewModel(repository, todayProvider = { date })
+        val viewModel = TodayViewModel(repository, nowProvider = { now })
         assertEquals(1, awaitGroups(viewModel) { it.size == 1 }.size)
 
         // Entered in the evening, after its slots have passed: the day stays complete.
@@ -171,7 +172,7 @@ class TodayViewModelTest {
     private suspend fun awaitGroups(
         viewModel: TodayViewModel,
         predicate: (List<DoseTimeGroup>) -> Boolean = { true }
-    ): List<DoseTimeGroup> = withTimeout(AWAIT_TIMEOUT_MILLIS) {
+    ): List<DoseTimeGroup> = withTimeout(AWAIT_TIMEOUT_MILLIS.milliseconds) {
         viewModel.uiState.first { !it.isLoading && predicate(it.groups) }.groups
     }
 

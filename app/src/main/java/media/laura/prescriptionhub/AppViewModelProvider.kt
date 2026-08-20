@@ -11,13 +11,16 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 object AppViewModelProvider {
     val Factory = viewModelFactory {
         initializer {
-            PrescriptionListViewModel(prescriptionApplication().prescriptionService)
+            val application = prescriptionApplication()
+            PrescriptionListViewModel(application.prescriptionService, application.nowProvider)
         }
         initializer {
-            TodayViewModel(prescriptionApplication().prescriptionService)
+            val application = prescriptionApplication()
+            TodayViewModel(application.prescriptionService, application.nowProvider)
         }
         initializer {
-            CalendarViewModel(prescriptionApplication().prescriptionService)
+            val application = prescriptionApplication()
+            CalendarViewModel(application.prescriptionService, application.nowProvider)
         }
     }
 }

@@ -9,33 +9,44 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import media.laura.prescriptionhub.data.model.Prescription
 import media.laura.prescriptionhub.data.repository.PrescriptionService
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 /**
  * State of the prescription list.
  *
  * @param prescriptions The prescriptions currently stored.
+ * @param today The current date, used to seed a new prescription's start date.
  * @param isLoading Whether the first database result is still pending.
  */
 data class PrescriptionListUiState(
     val prescriptions: List<Prescription> = emptyList(),
+    val today: LocalDate,
     val isLoading: Boolean = true
 )
 
 /**
  * Holds the prescription list and persists edits through [PrescriptionService].
+ *
+ * @param nowProvider Reads the current moment.
  */
 class PrescriptionListViewModel(
-    private val prescriptionService: PrescriptionService
+    private val prescriptionService: PrescriptionService,
+    private val nowProvider: () -> LocalDateTime
 ) : ViewModel() {
 
     val uiState: StateFlow<PrescriptionListUiState> = prescriptionService.getAllPrescriptions()
         .map { prescriptions ->
-            PrescriptionListUiState(prescriptions = prescriptions, isLoading = false)
+            PrescriptionListUiState(
+                prescriptions = prescriptions,
+                today = nowProvider().toLocalDate(),
+                isLoading = false
+            )
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
-            initialValue = PrescriptionListUiState()
+            initialValue = PrescriptionListUiState(today = nowProvider().toLocalDate())
         )
 
     /**

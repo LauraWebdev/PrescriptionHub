@@ -28,6 +28,8 @@ import java.time.LocalTime
 
 @RunWith(RobolectricTestRunner::class)
 class PrescriptionRepositoryTest {
+    private val anyStartDate = LocalDate.of(2026, 8, 19)
+    private var now = LocalDateTime.of(2026, 8, 19, 7, 0)
 
     private lateinit var database: PrescriptionDatabase
     private lateinit var repository: PrescriptionRepository
@@ -40,7 +42,7 @@ class PrescriptionRepositoryTest {
             context,
             PrescriptionDatabase::class.java
         ).allowMainThreadQueries().build()
-        repository = PrescriptionRepository(database.prescriptionDao())
+        repository = PrescriptionRepository(database.prescriptionDao(), nowProvider = { now })
         service = repository
     }
 
@@ -58,7 +60,8 @@ class PrescriptionRepositoryTest {
                 dosis = "20mg",
                 schedule = Schedule(
                     scheduleType = ScheduleType.DAILY,
-                    timesOfDay = listOf(LocalTime.of(7, 30))
+                    timesOfDay = listOf(LocalTime.of(7, 30)),
+                    startDate = anyStartDate
                 )
             )
         )
@@ -80,7 +83,8 @@ class PrescriptionRepositoryTest {
             Prescription(
                 name = "Metformin",
                 color = 0xFF654321,
-                dosis = "500mg"
+                dosis = "500mg",
+                schedule = Schedule(startDate = anyStartDate)
             )
         )
 
@@ -100,7 +104,8 @@ class PrescriptionRepositoryTest {
             dosis = "1 pill",
             schedule = Schedule(
                 scheduleType = ScheduleType.DAILY,
-                timesOfDay = listOf(LocalTime.of(8, 0))
+                timesOfDay = listOf(LocalTime.of(8, 0)),
+                startDate = anyStartDate
             )
         )
         val weekdayMed = Prescription(
@@ -110,7 +115,8 @@ class PrescriptionRepositoryTest {
             schedule = Schedule(
                 scheduleType = ScheduleType.SPECIFIC_DAYS_OF_WEEK,
                 daysOfWeek = listOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
-                timesOfDay = listOf(LocalTime.of(12, 0))
+                timesOfDay = listOf(LocalTime.of(12, 0)),
+                startDate = anyStartDate
             )
         )
         val every2DaysMed = Prescription(
@@ -151,7 +157,8 @@ class PrescriptionRepositoryTest {
             dosis = "1 pill",
             schedule = Schedule(
                 scheduleType = ScheduleType.DAILY,
-                timesOfDay = listOf(LocalTime.of(23, 0), LocalTime.of(8, 0))
+                timesOfDay = listOf(LocalTime.of(23, 0), LocalTime.of(8, 0)),
+                startDate = anyStartDate
             )
         )
         val p2 = Prescription(
@@ -160,14 +167,15 @@ class PrescriptionRepositoryTest {
             dosis = "5ml",
             schedule = Schedule(
                 scheduleType = ScheduleType.DAILY,
-                timesOfDay = listOf(LocalTime.of(14, 0))
+                timesOfDay = listOf(LocalTime.of(14, 0)),
+                startDate = anyStartDate
             )
         )
 
         service.addPrescription(p1)
         service.addPrescription(p2)
 
-        val doses = service.getScheduledDosesForDate(LocalDate.now()).first()
+        val doses = service.getScheduledDosesForDate(anyStartDate).first()
         assertEquals(3, doses.size)
         assertEquals(LocalTime.of(8, 0), doses[0].time)
         assertEquals("Morning & Night Med", doses[0].prescription.name)
@@ -194,7 +202,8 @@ class PrescriptionRepositoryTest {
                 dosis = "100mg",
                 schedule = Schedule(
                     scheduleType = ScheduleType.DAILY,
-                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                    startDate = anyStartDate
                 )
             )
         )
@@ -251,7 +260,8 @@ class PrescriptionRepositoryTest {
                 dosis = "100mg",
                 schedule = Schedule(
                     scheduleType = ScheduleType.DAILY,
-                    timesOfDay = listOf(LocalTime.of(8, 0))
+                    timesOfDay = listOf(LocalTime.of(8, 0)),
+                    startDate = anyStartDate
                 )
             )
         )
@@ -306,7 +316,8 @@ class PrescriptionRepositoryTest {
                 dosis = "1 pill",
                 schedule = Schedule(
                     scheduleType = ScheduleType.DAILY,
-                    timesOfDay = listOf(LocalTime.of(8, 0))
+                    timesOfDay = listOf(LocalTime.of(8, 0)),
+                    startDate = anyStartDate
                 )
             )
         )
@@ -348,7 +359,8 @@ class PrescriptionRepositoryTest {
                 dosis = "teeest",
                 schedule = Schedule(
                     scheduleType = ScheduleType.DAILY,
-                    timesOfDay = listOf(LocalTime.of(6, 0), LocalTime.of(12, 0), LocalTime.of(15, 0))
+                    timesOfDay = listOf(LocalTime.of(6, 0), LocalTime.of(12, 0), LocalTime.of(15, 0)),
+                    startDate = anyStartDate
                 )
             )
         )
@@ -376,7 +388,8 @@ class PrescriptionRepositoryTest {
                 dosis = "teeest",
                 schedule = Schedule(
                     scheduleType = ScheduleType.DAILY,
-                    timesOfDay = listOf(LocalTime.of(6, 0))
+                    timesOfDay = listOf(LocalTime.of(6, 0)),
+                    startDate = anyStartDate
                 )
             )
         )
@@ -401,7 +414,8 @@ class PrescriptionRepositoryTest {
                 dosis = "100mg",
                 schedule = Schedule(
                     scheduleType = ScheduleType.DAILY,
-                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0))
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                    startDate = anyStartDate
                 )
             )
         )
@@ -433,7 +447,8 @@ class PrescriptionRepositoryTest {
                 dosis = "100mg",
                 schedule = Schedule(
                     scheduleType = ScheduleType.DAILY,
-                    timesOfDay = listOf(LocalTime.of(12, 0))
+                    timesOfDay = listOf(LocalTime.of(12, 0)),
+                    startDate = anyStartDate
                 )
             )
         )
@@ -463,7 +478,8 @@ class PrescriptionRepositoryTest {
                 dosis = "100mg",
                 schedule = Schedule(
                     scheduleType = ScheduleType.DAILY,
-                    timesOfDay = listOf(LocalTime.of(8, 0))
+                    timesOfDay = listOf(LocalTime.of(8, 0)),
+                    startDate = anyStartDate
                 )
             )
         )
@@ -502,7 +518,8 @@ class PrescriptionRepositoryTest {
                 dosis = "1 pill",
                 schedule = Schedule(
                     scheduleType = ScheduleType.DAILY,
-                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0))
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                    startDate = anyStartDate
                 )
             )
         )
@@ -530,7 +547,8 @@ class PrescriptionRepositoryTest {
                 dosis = "123",
                 schedule = Schedule(
                     scheduleType = ScheduleType.DAILY,
-                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(15, 0), LocalTime.of(23, 0))
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(15, 0), LocalTime.of(23, 0)),
+                    startDate = anyStartDate
                 )
             )
         )

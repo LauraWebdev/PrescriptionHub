@@ -21,5 +21,5 @@ data class Prescription(
     val color: Long,
     val dosis: String,
     @Embedded
-    val schedule: Schedule = Schedule()
+    val schedule: Schedule
 )

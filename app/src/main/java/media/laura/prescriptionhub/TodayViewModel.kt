@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import media.laura.prescriptionhub.data.model.DoseChecklistItem
 import media.laura.prescriptionhub.data.repository.PrescriptionService
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 /**
  * State of the today checklist.
@@ -30,15 +31,15 @@ data class TodayUiState(
 /**
  * Holds today's dose checklist.
  *
- * @param todayProvider Reads the current date.
+ * @param nowProvider Reads the current moment.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TodayViewModel(
     private val prescriptionService: PrescriptionService,
-    private val todayProvider: () -> LocalDate = { LocalDate.now() }
+    private val nowProvider: () -> LocalDateTime
 ) : ViewModel() {
 
-    private val date = MutableStateFlow(todayProvider())
+    private val date = MutableStateFlow(nowProvider().toLocalDate())
 
     val uiState: StateFlow<TodayUiState> = date
         .flatMapLatest { day ->
@@ -57,7 +58,7 @@ class TodayViewModel(
         )
 
     fun refreshDate() {
-        date.value = todayProvider()
+        date.value = nowProvider().toLocalDate()
     }
 
     /**

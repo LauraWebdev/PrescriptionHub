@@ -35,8 +35,14 @@ class CalendarViewModelTest {
     private lateinit var database: PrescriptionDatabase
     private lateinit var repository: PrescriptionRepository
 
-    private var now = LocalDateTime.of(2026, 8, 17, 7, 0)
-    private val today = LocalDate.of(2026, 8, 19)
+    /**
+     * Two pinned clocks: the repository writes as of the 17th, so snapshots are valid from then,
+     * while the view model's present is the 19th.
+     */
+    private val insertedAt = LocalDateTime.of(2026, 8, 17, 7, 0)
+    private var now = LocalDateTime.of(2026, 8, 19, 18, 0)
+
+    private val today: LocalDate get() = now.toLocalDate()
 
     @Before
     fun setup() {
@@ -46,7 +52,7 @@ class CalendarViewModelTest {
             context,
             PrescriptionDatabase::class.java
         ).allowMainThreadQueries().build()
-        repository = PrescriptionRepository(database.prescriptionDao(), nowProvider = { now })
+        repository = PrescriptionRepository(database.prescriptionDao(), nowProvider = { insertedAt })
     }
 
     @After
@@ -156,7 +162,21 @@ class CalendarViewModelTest {
         assertEquals(1, state.progressByDate.getValue(LocalDate.of(2026, 8, 17)).doseCount)
     }
 
-    private fun viewModel() = CalendarViewModel(repository, todayProvider = { today })
+    @Test
+    fun refreshingRereadsTheClockSoTheDayDoesNotGoStale() = runBlocking {
+        addDailyPrescription("Metformin", LocalTime.of(8, 0))
+        val viewModel = viewModel()
+        assertEquals(today, awaitState(viewModel).today)
+
+        // The screen stays open past midnight, then comes back to the foreground.
+        now = LocalDateTime.of(2026, 8, 20, 9, 0)
+        viewModel.refresh()
+
+        val state = awaitState(viewModel) { it.now == now }
+        assertEquals(LocalDate.of(2026, 8, 20), state.today)
+    }
+
+    private fun viewModel() = CalendarViewModel(repository, nowProvider = { now })
 
     private suspend fun awaitState(
         viewModel: CalendarViewModel,
@@ -174,7 +194,7 @@ class CalendarViewModelTest {
                 schedule = Schedule(
                     scheduleType = ScheduleType.DAILY,
                     timesOfDay = times.toList(),
-                    startDate = now.toLocalDate()
+                    startDate = insertedAt.toLocalDate()
                 )
             )
         )

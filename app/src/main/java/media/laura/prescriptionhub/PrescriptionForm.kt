@@ -132,12 +132,14 @@ private val timesSaver = listSaver<SnapshotStateList<LocalTime>, String>(
 /**
  * Form for creating a prescription.
  *
+ * @param today The current date.
  * @param initialPrescription Optional values to prefill the form with.
  * @param onSave Invoked with the assembled prescription when Save is pressed.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun PrescriptionForm(
+    today: LocalDate,
     modifier: Modifier = Modifier,
     initialPrescription: Prescription? = null,
     onSave: (Prescription) -> Unit = {}
@@ -161,7 +163,7 @@ fun PrescriptionForm(
         mutableStateOf(initialPrescription?.schedule?.everyXDays?.toString().orEmpty())
     }
     var startDate by rememberSaveable(initialPrescription, stateSaver = localDateSaver) {
-        mutableStateOf(initialPrescription?.schedule?.startDate ?: LocalDate.now())
+        mutableStateOf(initialPrescription?.schedule?.startDate ?: today)
     }
     val times = rememberSaveable(initialPrescription, saver = timesSaver) {
         initialPrescription?.schedule?.timesOfDay.orEmpty().toMutableStateList()
@@ -580,11 +582,13 @@ private fun FormSection(
     }
 }
 
+private val previewToday = LocalDate.of(2026, 8, 19)
+
 @Preview(showBackground = true)
 @Composable
 fun PrescriptionFormPreview() {
     PrescriptionHubTheme {
-        PrescriptionForm()
+        PrescriptionForm(today = previewToday)
     }
 }
 
@@ -593,6 +597,7 @@ fun PrescriptionFormPreview() {
 fun PrescriptionFormSpecificDaysPreview() {
     PrescriptionHubTheme {
         PrescriptionForm(
+            today = previewToday,
             initialPrescription = Prescription(
                 name = "Ibuprofen",
                 color = prescriptionColors[8].toStoredLong(),
@@ -600,7 +605,8 @@ fun PrescriptionFormSpecificDaysPreview() {
                 schedule = Schedule(
                     scheduleType = ScheduleType.SPECIFIC_DAYS_OF_WEEK,
                     daysOfWeek = listOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
-                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0))
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                    startDate = previewToday
                 )
             )
         )
@@ -612,6 +618,7 @@ fun PrescriptionFormSpecificDaysPreview() {
 fun PrescriptionFormEveryXDaysPreview() {
     PrescriptionHubTheme {
         PrescriptionForm(
+            today = previewToday,
             initialPrescription = Prescription(
                 name = "Vitamin D",
                 color = prescriptionColors[3].toStoredLong(),
@@ -619,7 +626,8 @@ fun PrescriptionFormEveryXDaysPreview() {
                 schedule = Schedule(
                     scheduleType = ScheduleType.EVERY_X_DAYS,
                     everyXDays = 2,
-                    timesOfDay = listOf(LocalTime.of(9, 30))
+                    timesOfDay = listOf(LocalTime.of(9, 30)),
+                    startDate = previewToday
                 )
             )
         )
@@ -631,6 +639,7 @@ fun PrescriptionFormEveryXDaysPreview() {
 fun PrescriptionFormEditPreview() {
     PrescriptionHubTheme {
         PrescriptionForm(
+            today = previewToday,
             initialPrescription = Prescription(
                 id = 7,
                 name = "Metformin",
@@ -651,13 +660,15 @@ fun PrescriptionFormEditPreview() {
 fun PrescriptionFormDarkPreview() {
     PrescriptionHubTheme {
         PrescriptionForm(
+            today = previewToday,
             initialPrescription = Prescription(
                 name = "Metformin",
                 color = prescriptionColors[6].toStoredLong(),
                 dosis = "850mg",
                 schedule = Schedule(
                     scheduleType = ScheduleType.DAILY,
-                    timesOfDay = listOf(LocalTime.of(7, 0), LocalTime.of(13, 0), LocalTime.of(19, 0))
+                    timesOfDay = listOf(LocalTime.of(7, 0), LocalTime.of(13, 0), LocalTime.of(19, 0)),
+                    startDate = previewToday
                 )
             )
         )

@@ -5,16 +5,19 @@ import media.laura.prescriptionhub.data.model.ScheduleType
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalTime
 
 class ScheduleSummaryTest {
+    private val anyStartDate = LocalDate.of(2026, 8, 19)
 
     @Test
     fun dailyScheduleListsFrequencyThenTimes() {
         val summary = formatScheduleSummary(
             Schedule(
                 scheduleType = ScheduleType.DAILY,
-                timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(23, 0))
+                timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(23, 0)),
+                startDate = anyStartDate
             )
         )
 
@@ -26,7 +29,8 @@ class ScheduleSummaryTest {
         val summary = formatScheduleSummary(
             Schedule(
                 scheduleType = ScheduleType.DAILY,
-                timesOfDay = listOf(LocalTime.of(23, 0), LocalTime.of(8, 0))
+                timesOfDay = listOf(LocalTime.of(23, 0), LocalTime.of(8, 0)),
+                startDate = anyStartDate
             )
         )
 
@@ -36,7 +40,7 @@ class ScheduleSummaryTest {
     @Test
     fun scheduleWithoutTimesShowsOnlyFrequency() {
         val summary = formatScheduleSummary(
-            Schedule(scheduleType = ScheduleType.DAILY, timesOfDay = emptyList())
+            Schedule(scheduleType = ScheduleType.DAILY, timesOfDay = emptyList(), startDate = anyStartDate)
         )
 
         assertEquals("Daily", summary)
@@ -48,7 +52,8 @@ class ScheduleSummaryTest {
             Schedule(
                 scheduleType = ScheduleType.SPECIFIC_DAYS_OF_WEEK,
                 daysOfWeek = listOf(DayOfWeek.FRIDAY, DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY),
-                timesOfDay = listOf(LocalTime.of(8, 0))
+                timesOfDay = listOf(LocalTime.of(8, 0)),
+                startDate = anyStartDate
             )
         )
 
@@ -65,7 +70,8 @@ class ScheduleSummaryTest {
             Schedule(
                 scheduleType = ScheduleType.SPECIFIC_DAYS_OF_WEEK,
                 daysOfWeek = DayOfWeek.entries.toList(),
-                timesOfDay = listOf(LocalTime.of(8, 0))
+                timesOfDay = listOf(LocalTime.of(8, 0)),
+                startDate = anyStartDate
             )
         )
 
@@ -78,7 +84,8 @@ class ScheduleSummaryTest {
             Schedule(
                 scheduleType = ScheduleType.SPECIFIC_DAYS_OF_WEEK,
                 daysOfWeek = emptyList(),
-                timesOfDay = listOf(LocalTime.of(8, 0))
+                timesOfDay = listOf(LocalTime.of(8, 0)),
+                startDate = anyStartDate
             )
         )
 
@@ -91,7 +98,8 @@ class ScheduleSummaryTest {
             Schedule(
                 scheduleType = ScheduleType.EVERY_X_DAYS,
                 everyXDays = 3,
-                timesOfDay = listOf(LocalTime.of(9, 30))
+                timesOfDay = listOf(LocalTime.of(9, 30)),
+                startDate = anyStartDate
             )
         )
 
@@ -104,7 +112,8 @@ class ScheduleSummaryTest {
             Schedule(
                 scheduleType = ScheduleType.EVERY_X_DAYS,
                 everyXDays = 1,
-                timesOfDay = listOf(LocalTime.of(9, 30))
+                timesOfDay = listOf(LocalTime.of(9, 30)),
+                startDate = anyStartDate
             )
         )
 
@@ -117,7 +126,8 @@ class ScheduleSummaryTest {
             Schedule(
                 scheduleType = ScheduleType.EVERY_X_DAYS,
                 everyXDays = null,
-                timesOfDay = listOf(LocalTime.of(9, 30))
+                timesOfDay = listOf(LocalTime.of(9, 30)),
+                startDate = anyStartDate
             )
         )
 

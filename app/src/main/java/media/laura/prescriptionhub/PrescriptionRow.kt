@@ -33,6 +33,7 @@ import media.laura.prescriptionhub.data.model.Schedule
 import media.laura.prescriptionhub.data.model.ScheduleType
 import media.laura.prescriptionhub.ui.theme.PrescriptionHubTheme
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalTime
 
 /**
@@ -49,8 +50,6 @@ fun PrescriptionRow(
     onDeleteRequest: (Prescription) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // rememberSwipeToDismissBoxState keeps the confirm callback it was created with, so read the
-    // latest one through a state holder instead of capturing a stale lambda.
     val currentOnDeleteRequest by rememberUpdatedState(onDeleteRequest)
     val currentPrescription by rememberUpdatedState(prescription)
 
@@ -120,6 +119,8 @@ private fun DeleteSwipeBackground(modifier: Modifier = Modifier) {
     }
 }
 
+private val previewToday = LocalDate.of(2026, 8, 19)
+
 @Preview(showBackground = true)
 @Composable
 fun PrescriptionRowPreview() {
@@ -132,7 +133,8 @@ fun PrescriptionRowPreview() {
                 dosis = "850mg",
                 schedule = Schedule(
                     scheduleType = ScheduleType.DAILY,
-                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(23, 0))
+                    timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(23, 0)),
+                    startDate = previewToday
                 )
             ),
             onEdit = {},
@@ -154,7 +156,8 @@ fun PrescriptionRowSpecificDaysPreview() {
                 schedule = Schedule(
                     scheduleType = ScheduleType.SPECIFIC_DAYS_OF_WEEK,
                     daysOfWeek = listOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
-                    timesOfDay = listOf(LocalTime.of(8, 0))
+                    timesOfDay = listOf(LocalTime.of(8, 0)),
+                    startDate = previewToday
                 )
             ),
             onEdit = {},

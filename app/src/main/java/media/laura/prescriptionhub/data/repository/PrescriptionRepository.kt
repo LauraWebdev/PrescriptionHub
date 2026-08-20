@@ -21,7 +21,7 @@ import java.time.LocalTime
  */
 class PrescriptionRepository(
     private val prescriptionDao: PrescriptionDao,
-    private val nowProvider: () -> LocalDateTime = { LocalDateTime.now() }
+    private val nowProvider: () -> LocalDateTime
 ) : PrescriptionService {
 
     override fun getAllPrescriptions(): Flow<List<Prescription>> {

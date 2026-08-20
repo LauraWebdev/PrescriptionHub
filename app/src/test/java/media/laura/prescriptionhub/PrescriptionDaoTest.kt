@@ -25,6 +25,7 @@ import java.time.LocalTime
 
 @RunWith(RobolectricTestRunner::class)
 class PrescriptionDaoTest {
+    private val anyStartDate = LocalDate.of(2026, 8, 19)
 
     private lateinit var database: PrescriptionDatabase
     private lateinit var dao: PrescriptionDao
@@ -52,7 +53,8 @@ class PrescriptionDaoTest {
             dosis = "100mg",
             schedule = Schedule(
                 scheduleType = ScheduleType.DAILY,
-                timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(23, 0))
+                timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(23, 0)),
+                startDate = anyStartDate
             )
         )
 
@@ -77,7 +79,8 @@ class PrescriptionDaoTest {
             schedule = Schedule(
                 scheduleType = ScheduleType.SPECIFIC_DAYS_OF_WEEK,
                 daysOfWeek = listOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
-                timesOfDay = listOf(LocalTime.of(13, 0), LocalTime.MIDNIGHT)
+                timesOfDay = listOf(LocalTime.of(13, 0), LocalTime.MIDNIGHT),
+                startDate = anyStartDate
             )
         )
 
@@ -120,7 +123,7 @@ class PrescriptionDaoTest {
             name = "Ibuprofen",
             color = 0xFF0000FF,
             dosis = "200mg",
-            schedule = Schedule(scheduleType = ScheduleType.DAILY)
+            schedule = Schedule(scheduleType = ScheduleType.DAILY, startDate = anyStartDate)
         )
         val id = dao.insertPrescription(original)
 
@@ -142,7 +145,7 @@ class PrescriptionDaoTest {
             name = "Paracetamol",
             color = 0xFFFFFFFF,
             dosis = "500mg",
-            schedule = Schedule(scheduleType = ScheduleType.DAILY)
+            schedule = Schedule(scheduleType = ScheduleType.DAILY, startDate = anyStartDate)
         )
         val id = dao.insertPrescription(prescription)
         val saved = dao.getPrescriptionByIdOnce(id)!!
@@ -157,7 +160,7 @@ class PrescriptionDaoTest {
             name = "Paracetamol",
             color = 0xFFFFFFFF,
             dosis = "500mg",
-            schedule = Schedule(scheduleType = ScheduleType.DAILY)
+            schedule = Schedule(scheduleType = ScheduleType.DAILY, startDate = anyStartDate)
         )
         val id = dao.insertPrescription(prescription)
         dao.deletePrescriptionById(id)
@@ -166,8 +169,18 @@ class PrescriptionDaoTest {
 
     @Test
     fun testGetAllPrescriptions() = runBlocking {
-        val p1 = Prescription(name = "Med 1", color = 0x1, dosis = "10mg")
-        val p2 = Prescription(name = "Med 2", color = 0x2, dosis = "20mg")
+        val p1 = Prescription(
+            name = "Med 1",
+            color = 0x1,
+            dosis = "10mg",
+            schedule = Schedule(startDate = anyStartDate)
+        )
+        val p2 = Prescription(
+            name = "Med 2",
+            color = 0x2,
+            dosis = "20mg",
+            schedule = Schedule(startDate = anyStartDate)
+        )
         dao.insertPrescriptions(listOf(p1, p2))
 
         val list = dao.getAllPrescriptions().first()

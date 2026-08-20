@@ -12,12 +12,13 @@ import kotlinx.coroutines.flow.stateIn
 import media.laura.prescriptionhub.data.model.DoseDayProgress
 import media.laura.prescriptionhub.data.repository.PrescriptionService
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 /**
  * State of the calendar.
  *
  * @param selectedDate The day whose checklist is shown.
- * @param today The current date, used to mark the selected day and to judge missed doses.
+ * @param now The current moment.
  * @param groups The selected day's doses, one group per time of day.
  * @param progressByDate Completion per day for the day ring row. Days without a scheduled dose are
  *   absent, as are days outside the loaded window.
@@ -25,28 +26,31 @@ import java.time.LocalDate
  */
 data class CalendarUiState(
     val selectedDate: LocalDate,
-    val today: LocalDate,
+    val now: LocalDateTime,
     val groups: List<DoseTimeGroup> = emptyList(),
     val progressByDate: Map<LocalDate, DoseDayProgress> = emptyMap(),
     val isLoading: Boolean = true
-)
+) {
+    val today: LocalDate get() = now.toLocalDate()
+}
 
 /**
  * Holds the calendar's selected day.
  *
- * @param todayProvider Reads the current date. Injected so tests can pin the day.
+ * @param nowProvider Reads the current moment.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class CalendarViewModel(
     private val prescriptionService: PrescriptionService,
-    private val todayProvider: () -> LocalDate = { LocalDate.now() }
+    private val nowProvider: () -> LocalDateTime
 ) : ViewModel() {
 
-    private val selectedDate = MutableStateFlow(todayProvider())
+    private val clock = MutableStateFlow(nowProvider())
+
+    private val selectedDate = MutableStateFlow(clock.value.toLocalDate())
 
     val uiState: StateFlow<CalendarUiState> = selectedDate
         .flatMapLatest { date ->
-            val today = todayProvider()
             combine(
                 prescriptionService.getDoseChecklistForDate(date),
                 prescriptionService.getDoseProgressForDates(
@@ -56,21 +60,26 @@ class CalendarViewModel(
             ) { doses, progress ->
                 CalendarUiState(
                     selectedDate = date,
-                    today = today,
+                    now = clock.value,
                     groups = groupDosesByTime(doses),
                     progressByDate = progress.associateBy { it.date },
                     isLoading = false
                 )
             }
         }
+        .combine(clock) { state, moment -> state.copy(now = moment) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
             initialValue = CalendarUiState(
                 selectedDate = selectedDate.value,
-                today = selectedDate.value
+                now = clock.value
             )
         )
+
+    fun refresh() {
+        clock.value = nowProvider()
+    }
 
     fun selectDate(date: LocalDate) {
         selectedDate.value = date
