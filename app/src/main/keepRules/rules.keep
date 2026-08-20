@@ -10,3 +10,15 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+# ScheduleType is reconstructed from a database string via valueOf(), so R8
+# cannot see which constants are reachable. Keep their names.
+-keepclassmembers enum media.laura.prescriptionhub.** {
+    <fields>;
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+# Keep crash reports mappable back to source via mapping.txt.
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile

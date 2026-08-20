@@ -235,7 +235,7 @@ private const val ANCHOR_INDEX = DAY_COUNT / 2
 
 @Preview(showBackground = true)
 @Composable
-fun DayProgressRowPreview() {
+private fun DayProgressRowPreview() {
     val today = LocalDate.of(2026, 8, 19)
     PrescriptionHubTheme {
         DayProgressRow(

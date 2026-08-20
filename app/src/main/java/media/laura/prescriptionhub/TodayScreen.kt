@@ -195,7 +195,7 @@ private fun previewGroups(lateGroupTaken: Boolean): List<DoseTimeGroup> {
 
 @Preview(showBackground = true)
 @Composable
-fun TodayScreenPreview() {
+private fun TodayScreenPreview() {
     PrescriptionHubTheme {
         TodayScreenContent(groups = previewGroups(lateGroupTaken = false))
     }
@@ -203,7 +203,7 @@ fun TodayScreenPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun TodayScreenAllTakenPreview() {
+private fun TodayScreenAllTakenPreview() {
     PrescriptionHubTheme {
         TodayScreenContent(groups = previewGroups(lateGroupTaken = true))
     }
@@ -211,7 +211,7 @@ fun TodayScreenAllTakenPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun TodayScreenEmptyPreview() {
+private fun TodayScreenEmptyPreview() {
     PrescriptionHubTheme {
         TodayScreenContent(groups = emptyList())
     }
@@ -219,7 +219,7 @@ fun TodayScreenEmptyPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun TodayScreenExactAlarmWarningPreview() {
+private fun TodayScreenExactAlarmWarningPreview() {
     PrescriptionHubTheme {
         TodayScreenContent(
             groups = previewGroups(lateGroupTaken = false),
@@ -230,7 +230,7 @@ fun TodayScreenExactAlarmWarningPreview() {
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun TodayScreenDarkPreview() {
+private fun TodayScreenDarkPreview() {
     PrescriptionHubTheme {
         TodayScreenContent(groups = previewGroups(lateGroupTaken = false))
     }

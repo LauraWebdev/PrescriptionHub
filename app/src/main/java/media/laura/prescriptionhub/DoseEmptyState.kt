@@ -76,7 +76,7 @@ fun DoseEmptyState(
 
 @Preview(showBackground = true)
 @Composable
-fun DoseEmptyStatePreview() {
+private fun DoseEmptyStatePreview() {
     PrescriptionHubTheme {
         DoseEmptyState(
             headline = "Nothing scheduled today",

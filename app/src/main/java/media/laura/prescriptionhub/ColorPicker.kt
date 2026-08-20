@@ -287,7 +287,7 @@ private fun GradientSlider(
 
 @Preview(showBackground = true)
 @Composable
-fun ColorSwatchPickerPreview() {
+private fun ColorSwatchPickerPreview() {
     PrescriptionHubTheme {
         ColorSwatchPicker(
             selected = prescriptionColors[5],
@@ -300,7 +300,7 @@ fun ColorSwatchPickerPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun CustomColorDialogPreview() {
+private fun CustomColorDialogPreview() {
     PrescriptionHubTheme {
         CustomColorDialog(
             initial = prescriptionColors[8],

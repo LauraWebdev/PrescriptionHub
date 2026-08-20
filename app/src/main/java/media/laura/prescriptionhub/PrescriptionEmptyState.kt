@@ -82,7 +82,7 @@ fun PrescriptionEmptyState(
 
 @Preview(showBackground = true)
 @Composable
-fun PrescriptionEmptyStatePreview() {
+private fun PrescriptionEmptyStatePreview() {
     PrescriptionHubTheme {
         PrescriptionEmptyState(onAddPrescription = {})
     }

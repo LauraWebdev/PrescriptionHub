@@ -87,7 +87,7 @@ fun openExactAlarmSettings(context: Context) {
 
 @Preview(showBackground = true)
 @Composable
-fun ExactAlarmBannerPreview() {
+private fun ExactAlarmBannerPreview() {
     PrescriptionHubTheme {
         ExactAlarmBanner(onGrant = {}, onDismiss = {})
     }

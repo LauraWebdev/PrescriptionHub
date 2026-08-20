@@ -56,7 +56,7 @@ fun TodayDoneBanner(modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-fun TodayDoneBannerPreview() {
+private fun TodayDoneBannerPreview() {
     PrescriptionHubTheme {
         TodayDoneBanner()
     }
@@ -64,7 +64,7 @@ fun TodayDoneBannerPreview() {
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun TodayDoneBannerDarkPreview() {
+private fun TodayDoneBannerDarkPreview() {
     PrescriptionHubTheme {
         TodayDoneBanner()
     }

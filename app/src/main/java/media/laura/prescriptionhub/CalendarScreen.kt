@@ -266,7 +266,7 @@ private fun previewProgress(): Map<LocalDate, DoseDayProgress> = listOf(
 
 @Preview(showBackground = true)
 @Composable
-fun CalendarScreenPreview() {
+private fun CalendarScreenPreview() {
     PrescriptionHubTheme {
         CalendarScreenContent(
             selectedDate = previewDay,
@@ -279,7 +279,7 @@ fun CalendarScreenPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun CalendarScreenEmptyPreview() {
+private fun CalendarScreenEmptyPreview() {
     PrescriptionHubTheme {
         CalendarScreenContent(
             selectedDate = previewToday.plusDays(3),
@@ -292,7 +292,7 @@ fun CalendarScreenEmptyPreview() {
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun CalendarScreenDarkPreview() {
+private fun CalendarScreenDarkPreview() {
     PrescriptionHubTheme {
         CalendarScreenContent(
             selectedDate = previewDay,

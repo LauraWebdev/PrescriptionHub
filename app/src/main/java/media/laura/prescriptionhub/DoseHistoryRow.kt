@@ -77,7 +77,7 @@ private fun previewDose(
 
 @Preview(showBackground = true)
 @Composable
-fun DoseHistoryRowTakenPreview() {
+private fun DoseHistoryRowTakenPreview() {
     PrescriptionHubTheme {
         DoseHistoryRow(
             dose = previewDose(
@@ -94,7 +94,7 @@ fun DoseHistoryRowTakenPreview() {
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun DoseHistoryRowMissedPreview() {
+private fun DoseHistoryRowMissedPreview() {
     PrescriptionHubTheme {
         DoseHistoryRow(
             dose = previewDose(name = "Candecor", dosis = "1 pill", colorIndex = 0, taken = false),
@@ -105,7 +105,7 @@ fun DoseHistoryRowMissedPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun DoseHistoryRowUpcomingPreview() {
+private fun DoseHistoryRowUpcomingPreview() {
     PrescriptionHubTheme {
         DoseHistoryRow(
             dose = previewDose(name = "Progesteron", dosis = "1 pill", colorIndex = 2, taken = false),

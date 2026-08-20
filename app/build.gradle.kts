@@ -22,8 +22,10 @@ android {
 
     buildTypes {
         release {
+            // Runs R8: dead-code stripping keeps @Preview functions and their
+            // sample data out of the release APK.
             optimization {
-                enable = false
+                enable = true
             }
         }
     }

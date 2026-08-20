@@ -123,7 +123,7 @@ private val previewToday = LocalDate.of(2026, 8, 19)
 
 @Preview(showBackground = true)
 @Composable
-fun PrescriptionRowPreview() {
+private fun PrescriptionRowPreview() {
     PrescriptionHubTheme {
         PrescriptionRow(
             prescription = Prescription(
@@ -145,7 +145,7 @@ fun PrescriptionRowPreview() {
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun PrescriptionRowSpecificDaysPreview() {
+private fun PrescriptionRowSpecificDaysPreview() {
     PrescriptionHubTheme {
         PrescriptionRow(
             prescription = Prescription(

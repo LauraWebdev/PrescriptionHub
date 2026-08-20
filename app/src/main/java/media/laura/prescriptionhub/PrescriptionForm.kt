@@ -586,7 +586,7 @@ private val previewToday = LocalDate.of(2026, 8, 19)
 
 @Preview(showBackground = true)
 @Composable
-fun PrescriptionFormPreview() {
+private fun PrescriptionFormPreview() {
     PrescriptionHubTheme {
         PrescriptionForm(today = previewToday)
     }
@@ -594,7 +594,7 @@ fun PrescriptionFormPreview() {
 
 @Preview(showBackground = true, heightDp = 900)
 @Composable
-fun PrescriptionFormSpecificDaysPreview() {
+private fun PrescriptionFormSpecificDaysPreview() {
     PrescriptionHubTheme {
         PrescriptionForm(
             today = previewToday,
@@ -615,7 +615,7 @@ fun PrescriptionFormSpecificDaysPreview() {
 
 @Preview(showBackground = true, heightDp = 900)
 @Composable
-fun PrescriptionFormEveryXDaysPreview() {
+private fun PrescriptionFormEveryXDaysPreview() {
     PrescriptionHubTheme {
         PrescriptionForm(
             today = previewToday,
@@ -636,7 +636,7 @@ fun PrescriptionFormEveryXDaysPreview() {
 
 @Preview(showBackground = true, heightDp = 900)
 @Composable
-fun PrescriptionFormEditPreview() {
+private fun PrescriptionFormEditPreview() {
     PrescriptionHubTheme {
         PrescriptionForm(
             today = previewToday,
@@ -657,7 +657,7 @@ fun PrescriptionFormEditPreview() {
 
 @Preview(showBackground = true, heightDp = 900, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun PrescriptionFormDarkPreview() {
+private fun PrescriptionFormDarkPreview() {
     PrescriptionHubTheme {
         PrescriptionForm(
             today = previewToday,

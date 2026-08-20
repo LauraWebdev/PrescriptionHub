@@ -30,7 +30,7 @@ fun DoseTimeHeader(
 
 @Preview(showBackground = true)
 @Composable
-fun DoseTimeHeaderPreview() {
+private fun DoseTimeHeaderPreview() {
     PrescriptionHubTheme {
         DoseTimeHeader(time = LocalTime.of(8, 0))
     }

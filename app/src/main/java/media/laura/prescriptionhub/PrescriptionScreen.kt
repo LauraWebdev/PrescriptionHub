@@ -192,7 +192,7 @@ private val previewToday = LocalDate.of(2026, 8, 19)
 
 @Preview(showBackground = true)
 @Composable
-fun PrescriptionScreenEmptyPreview() {
+private fun PrescriptionScreenEmptyPreview() {
     PrescriptionHubTheme {
         PrescriptionScreenContent(prescriptions = emptyList(), today = previewToday)
     }
@@ -200,7 +200,7 @@ fun PrescriptionScreenEmptyPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun PrescriptionScreenPreview() {
+private fun PrescriptionScreenPreview() {
     PrescriptionHubTheme {
         PrescriptionScreenContent(
             prescriptions = listOf(

@@ -118,7 +118,7 @@ private fun previewDose(
 
 @Preview(showBackground = true)
 @Composable
-fun DoseTimeGroupHeaderPartialPreview() {
+private fun DoseTimeGroupHeaderPartialPreview() {
     PrescriptionHubTheme {
         DoseTimeGroupHeader(
             group = DoseTimeGroup(
@@ -136,7 +136,7 @@ fun DoseTimeGroupHeaderPartialPreview() {
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun DoseTimeGroupHeaderCompletePreview() {
+private fun DoseTimeGroupHeaderCompletePreview() {
     PrescriptionHubTheme {
         DoseTimeGroupHeader(
             group = DoseTimeGroup(

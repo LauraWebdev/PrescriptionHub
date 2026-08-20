@@ -48,7 +48,7 @@ fun DoseRow(
 
 @Preview(showBackground = true)
 @Composable
-fun DoseRowOpenPreview() {
+private fun DoseRowOpenPreview() {
     PrescriptionHubTheme {
         DoseRow(
             dose = DoseChecklistItem(
@@ -69,7 +69,7 @@ fun DoseRowOpenPreview() {
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun DoseRowTakenPreview() {
+private fun DoseRowTakenPreview() {
     PrescriptionHubTheme {
         DoseRow(
             dose = DoseChecklistItem(
