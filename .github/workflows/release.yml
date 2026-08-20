@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  create:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release APK
+    if: |
+      startsWith(github.ref_name, 'release/') &&
+      (github.event_name == 'workflow_dispatch' || github.event.ref_type == 'branch')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Derive version from branch name
+        id: version
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#release/}"
+          version="${version#v}"
+          if [ -z "$version" ]; then
+            echo "::error::Branch '${GITHUB_REF_NAME}' carries no version; expected e.g. release/1.2.0"
+            exit 1
+          fi
+          {
+            echo "version=${version}"
+            echo "tag=v${version}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-37'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Build release APK
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Stage APK
+        id: apk
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          built="$(find app/build/outputs/apk/release -name '*.apk' -print -quit)"
+          if [ -z "$built" ]; then
+            echo "::error::No APK found under app/build/outputs/apk/release"
+            exit 1
+          fi
+          apk="prescription-hub-${VERSION}-release-unsigned.apk"
+          cp "$built" "$apk"
+          echo "apk=${apk}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+          APK: ${{ steps.apk.outputs.apk }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::error::Release $TAG already exists"
+            exit 1
+          fi
+          gh release create "$TAG" "$APK" \
+            --target "$GITHUB_SHA" \
+            --title "Prescription Hub ${VERSION}" \
+            --notes "Release build of \`${GITHUB_REF_NAME}\` at ${GITHUB_SHA}."
