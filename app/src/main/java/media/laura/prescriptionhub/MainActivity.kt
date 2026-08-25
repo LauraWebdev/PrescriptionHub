@@ -17,7 +17,10 @@ import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.core.content.ContextCompat
+import androidx.window.core.layout.WindowSizeClass
 import media.laura.prescriptionhub.ui.theme.PrescriptionHubTheme
 
 class MainActivity : ComponentActivity() {
@@ -112,30 +116,45 @@ fun PrescriptionHubApp(navRequest: Pair<Int, AppDestinations>? = null) {
             onBack = { overlay = AppOverlay.SETTINGS }
         )
 
-        null -> NavigationSuiteScaffold(
-            navigationSuiteItems = {
-                AppDestinations.entries.forEach {
-                    item(
-                        icon = {
-                            Icon(
-                                imageVector = it.icon,
-                                contentDescription = it.label
-                            )
-                        },
-                        label = { Text(it.label) },
-                        selected = it == currentDestination,
-                        onClick = { currentDestination = it }
+        null -> {
+            val windowAdaptiveInfo = currentWindowAdaptiveInfo()
+            /* Small screens receive the narrow icon-only NavigationRail. Bigger screens like tablets use a sidebar with expanded labels */
+            val navigationLayoutType =
+                if (windowAdaptiveInfo.windowSizeClass.isWidthAtLeastBreakpoint(
+                        WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND
                     )
+                ) {
+                    NavigationSuiteType.WideNavigationRailExpanded
+                } else {
+                    NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(windowAdaptiveInfo)
                 }
-            }
-        ) {
-            when (currentDestination) {
-                AppDestinations.TODAY -> TodayScreen(
-                    onOpenSettings = { overlay = AppOverlay.SETTINGS }
-                )
 
-                AppDestinations.CALENDAR -> CalendarScreen()
-                AppDestinations.PRESCRIPTION -> PrescriptionScreen()
+            NavigationSuiteScaffold(
+                layoutType = navigationLayoutType,
+                navigationSuiteItems = {
+                    AppDestinations.entries.forEach {
+                        item(
+                            icon = {
+                                Icon(
+                                    imageVector = it.icon,
+                                    contentDescription = it.label
+                                )
+                            },
+                            label = { Text(it.label) },
+                            selected = it == currentDestination,
+                            onClick = { currentDestination = it }
+                        )
+                    }
+                }
+            ) {
+                when (currentDestination) {
+                    AppDestinations.TODAY -> TodayScreen(
+                        onOpenSettings = { overlay = AppOverlay.SETTINGS }
+                    )
+
+                    AppDestinations.CALENDAR -> CalendarScreen()
+                    AppDestinations.PRESCRIPTION -> PrescriptionScreen()
+                }
             }
         }
     }
