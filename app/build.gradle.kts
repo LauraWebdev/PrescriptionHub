@@ -11,6 +11,16 @@ plugins {
 val appVersionName: String = providers.gradleProperty("appVersionName").getOrElse("1.0")
 val appVersionCode: Int = providers.gradleProperty("appVersionCode").map(String::toInt).getOrElse(1)
 
+val releaseKeystorePath: String? = providers.gradleProperty("releaseKeystorePath").orNull
+val releaseKeystorePassword: String? = providers.gradleProperty("releaseKeystorePassword").orNull
+val releaseKeyAlias: String? = providers.gradleProperty("releaseKeyAlias").orNull
+val releaseKeyPassword: String? = providers.gradleProperty("releaseKeyPassword").orNull
+val releaseKeystoreType: String = providers.gradleProperty("releaseKeystoreType").getOrElse("PKCS12")
+val hasReleaseSigningConfig = !releaseKeystorePath.isNullOrBlank() &&
+    !releaseKeystorePassword.isNullOrBlank() &&
+    !releaseKeyAlias.isNullOrBlank() &&
+    !releaseKeyPassword.isNullOrBlank()
+
 android {
     namespace = "media.laura.prescriptionhub"
     compileSdk {
@@ -27,10 +37,25 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (hasReleaseSigningConfig) {
+            create("release") {
+                storeFile = file(releaseKeystorePath!!)
+                storePassword = releaseKeystorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+                storeType = releaseKeystoreType
+            }
+        }
+    }
+
     buildTypes {
         release {
             optimization {
                 enable = true
+            }
+            if (hasReleaseSigningConfig) {
+                signingConfig = signingConfigs.getByName("release")
             }
         }
     }

@@ -3,6 +3,11 @@ name: Nightly
 on:
   push:
     branches: [ dev ]
+    paths-ignore:
+      - 'LICENSE'
+      - 'README.md'
+      - '.gitignore'
+      - 'docs/**'
   workflow_dispatch:
 
 permissions:
