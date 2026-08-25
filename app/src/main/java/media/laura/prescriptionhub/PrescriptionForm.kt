@@ -6,7 +6,9 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -18,30 +20,30 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.MultiChoiceSegmentedButtonRow
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.Surface
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -58,6 +60,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
@@ -190,7 +193,7 @@ fun PrescriptionForm(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
             .imePadding(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text(
             text = if (initialPrescription == null) "New Prescription" else "Edit Prescription",
@@ -199,71 +202,53 @@ fun PrescriptionForm(
             modifier = Modifier.fillMaxWidth()
         )
 
-        FormSection(title = "General") {
-            OutlinedTextField(
+        SettingsGroup(title = "General") {
+            FormTextRow(
+                label = "Name",
                 value = name,
                 onValueChange = { name = it },
-                label = { Text(text = "Name") },
-                singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Sentences,
                     imeAction = ImeAction.Next
-                ),
-                modifier = Modifier.fillMaxWidth()
+                )
             )
 
-            OutlinedTextField(
+            HorizontalDivider()
+
+            FormTextRow(
+                label = "Dosage",
                 value = dosis,
                 onValueChange = { dosis = it },
-                label = { Text(text = "Dosage") },
-                placeholder = { Text(text = "e.g. 500mg") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                modifier = Modifier.fillMaxWidth()
+                placeholder = "e.g. 500mg",
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
             )
 
-            Text(
-                text = "Color",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            ColorSwatchPicker(
-                selected = colorArgb.toComposeColor(),
-                onSelect = { colorArgb = it.toStoredLong() },
-                onCustomClick = { showCustomColorDialog = true }
-            )
+            HorizontalDivider()
+
+            FormControlRow(label = "Color") {
+                ColorSwatchPicker(
+                    selected = colorArgb.toComposeColor(),
+                    onSelect = { colorArgb = it.toStoredLong() },
+                    onCustomClick = { showCustomColorDialog = true }
+                )
+            }
         }
 
-        FormSection(title = "Schedule") {
-            ExposedDropdownMenuBox(
+        SettingsGroup(title = "Schedule") {
+            FormPickerRow(
+                label = "Type",
+                value = scheduleTypeLabel(scheduleType),
                 expanded = typeMenuExpanded,
                 onExpandedChange = { typeMenuExpanded = it }
-            ) {
-                OutlinedTextField(
-                    value = scheduleTypeLabel(scheduleType),
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(text = "Type") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeMenuExpanded)
-                    },
-                    modifier = Modifier
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                        .fillMaxWidth()
-                )
-                ExposedDropdownMenu(
-                    expanded = typeMenuExpanded,
-                    onDismissRequest = { typeMenuExpanded = false }
-                ) {
-                    ScheduleType.entries.forEach { type ->
-                        DropdownMenuItem(
-                            text = { Text(text = scheduleTypeLabel(type)) },
-                            onClick = {
-                                scheduleType = type
-                                typeMenuExpanded = false
-                            }
-                        )
-                    }
+            ) { dismiss ->
+                ScheduleType.entries.forEach { type ->
+                    DropdownMenuItem(
+                        text = { Text(text = scheduleTypeLabel(type)) },
+                        onClick = {
+                            scheduleType = type
+                            dismiss()
+                        }
+                    )
                 }
             }
 
@@ -272,10 +257,15 @@ fun PrescriptionForm(
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
-                DayOfWeekToggles(
-                    daysMask = daysMask,
-                    onToggle = { daysMask = daysMask.toggleDay(it) }
-                )
+                Column {
+                    HorizontalDivider()
+                    FormControlRow(label = "Days") {
+                        DayOfWeekToggles(
+                            daysMask = daysMask,
+                            onToggle = { daysMask = daysMask.toggleDay(it) }
+                        )
+                    }
+                }
             }
 
             AnimatedVisibility(
@@ -283,114 +273,98 @@ fun PrescriptionForm(
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
-                OutlinedTextField(
-                    value = everyXDaysText,
-                    onValueChange = { input ->
-                        everyXDaysText = input.filter(Char::isDigit).take(3)
-                    },
-                    label = { Text(text = "Interval") },
-                    prefix = { Text(text = "Every") },
-                    suffix = { Text(text = "days") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Done
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Column {
+                    HorizontalDivider()
+                    FormTextRow(
+                        label = "Interval",
+                        value = everyXDaysText,
+                        onValueChange = { input ->
+                            everyXDaysText = input.filter(Char::isDigit).take(3)
+                        },
+                        prefix = "Every",
+                        suffix = "days",
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        )
+                    )
+                }
             }
 
-            OutlinedTextField(
-                value = formatStartDate(startDate),
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(text = "Start date") },
-                trailingIcon = {
-                    IconButton(onClick = { showDatePicker = true }) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = "Pick start date"
-                        )
-                    }
+            HorizontalDivider()
+
+            ListItem(
+                headlineContent = { Text(text = "Start date") },
+                supportingContent = { Text(text = formatStartDate(startDate)) },
+                trailingContent = {
+                    Icon(
+                        imageVector = Icons.Default.DateRange,
+                        contentDescription = null
+                    )
                 },
-                modifier = Modifier.fillMaxWidth()
+                colors = settingsRowColors(),
+                modifier = Modifier.clickable { showDatePicker = true }
             )
 
-            Text(
-                text = "Times",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                times.forEach { time ->
-                    InputChip(
-                        selected = false,
-                        onClick = { times.remove(time) },
-                        label = { Text(text = formatTimeOfDay(time)) },
-                        trailingIcon = {
+            HorizontalDivider()
+
+            FormControlRow(label = "Times") {
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    times.forEach { time ->
+                        InputChip(
+                            selected = false,
+                            onClick = { times.remove(time) },
+                            label = { Text(text = formatTimeOfDay(time)) },
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Remove ${formatTimeOfDay(time)}",
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        )
+                    }
+                    AssistChip(
+                        onClick = { showTimePicker = true },
+                        label = { Text(text = "Add time") },
+                        leadingIcon = {
                             Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Remove ${formatTimeOfDay(time)}",
+                                imageVector = Icons.Default.Add,
+                                contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
                     )
                 }
-                AssistChip(
-                    onClick = { showTimePicker = true },
-                    label = { Text(text = "Add time") },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                )
-            }
-            if (times.isEmpty()) {
-                Text(
-                    text = "No times added yet",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                if (times.isEmpty()) {
+                    Text(
+                        text = "No times added yet",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
 
-        FormSection(title = "Reminder") {
-            ExposedDropdownMenuBox(
+        SettingsGroup(title = "Reminder") {
+            FormPickerRow(
+                label = "Remind me",
+                value = formatReminderLead(reminderLeadMinutes),
                 expanded = reminderMenuExpanded,
                 onExpandedChange = { reminderMenuExpanded = it }
-            ) {
-                OutlinedTextField(
-                    value = formatReminderLead(reminderLeadMinutes),
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(text = "Remind me") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = reminderMenuExpanded)
-                    },
-                    modifier = Modifier
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                        .fillMaxWidth()
-                )
-                ExposedDropdownMenu(
-                    expanded = reminderMenuExpanded,
-                    onDismissRequest = { reminderMenuExpanded = false }
-                ) {
-                    reminderLeadOptions.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(text = formatReminderLead(option)) },
-                            onClick = {
-                                reminderLeadMinutes = option
-                                reminderMenuExpanded = false
-                            }
-                        )
-                    }
+            ) { dismiss ->
+                reminderLeadOptions.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(text = formatReminderLead(option)) },
+                        onClick = {
+                            reminderLeadMinutes = option
+                            dismiss()
+                        }
+                    )
                 }
             }
 
@@ -399,12 +373,16 @@ fun PrescriptionForm(
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
-                Text(
-                    text = "The reminder stays on screen until you mark the dose as taken, " +
-                            "up to five minutes after it is due.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Column {
+                    HorizontalDivider()
+                    Text(
+                        text = "The reminder stays on screen until you mark the dose as taken, " +
+                                "up to five minutes after it is due.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                    )
+                }
             }
         }
 
@@ -550,34 +528,110 @@ private fun TimeOfDayPickerDialog(
 }
 
 /**
- * Grouped settings card
+ * A text field that sits inside a [SettingsGroup].
  *
- * @param title Section label rendered above the card.
- * @param content Fields laid out vertically inside the card.
+ * @param label Floating label naming the field.
+ * @param value Current text.
+ * @param onValueChange Invoked with the edited text.
+ * @param keyboardOptions Keyboard type and IME action for the field.
+ * @param placeholder Hint shown while the field is empty.
+ * @param prefix Text shown before the value.
+ * @param suffix Text shown after the value.
  */
 @Composable
-private fun FormSection(
-    title: String,
+private fun FormTextRow(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    keyboardOptions: KeyboardOptions,
+    modifier: Modifier = Modifier,
+    placeholder: String? = null,
+    prefix: String? = null,
+    suffix: String? = null
+) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(text = label) },
+        placeholder = placeholder?.let { { Text(text = it) } },
+        prefix = prefix?.let { { Text(text = it) } },
+        suffix = suffix?.let { { Text(text = it) } },
+        singleLine = true,
+        keyboardOptions = keyboardOptions,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent
+        ),
+        modifier = modifier.fillMaxWidth()
+    )
+}
+
+/**
+ * A labelled row for a control that does not fit a [ListItem].
+ *
+ * @param label Row label, styled like a [ListItem] headline.
+ * @param content The control, laid out below the label.
+ */
+@Composable
+private fun FormControlRow(
+    label: String,
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
         Text(
-            text = title,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface
         )
-        Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            modifier = Modifier.fillMaxWidth()
+        content()
+    }
+}
+
+/**
+ * A [ListItem] row that shows the current selection and opens a dropdown when tapped.
+ *
+ * @param label Row label.
+ * @param value The current selection, shown as supporting text.
+ * @param expanded Whether the dropdown is open.
+ * @param onExpandedChange Invoked when the dropdown should open or close.
+ * @param menuItems The dropdown entries; call `dismiss` to close the menu after picking.
+ */
+@Composable
+private fun FormPickerRow(
+    label: String,
+    value: String,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    menuItems: @Composable ColumnScope.(dismiss: () -> Unit) -> Unit
+) {
+    Box(modifier = modifier) {
+        ListItem(
+            headlineContent = { Text(text = label) },
+            supportingContent = { Text(text = value) },
+            trailingContent = {
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = null
+                )
+            },
+            colors = settingsRowColors(),
+            modifier = Modifier.clickable { onExpandedChange(true) }
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { onExpandedChange(false) }
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                content = content
-            )
+            menuItems { onExpandedChange(false) }
         }
     }
 }
