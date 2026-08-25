@@ -19,8 +19,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,6 +68,8 @@ fun DayProgressRow(
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = indexForDate(selectedDate))
     val currentOnDateSelected by rememberUpdatedState(onDateSelected)
 
+    var isJumpingToSelection by remember { mutableStateOf(false) }
+
     // The ring nearest the middle of the viewport: the one the row is pointing at.
     val centeredIndex by remember(listState) {
         derivedStateOf {
@@ -92,22 +96,31 @@ fun DayProgressRow(
         }
     }
 
-    // Switch day the moment a ring reaches the middle
+    // Switch day the moment a ring reaches the middle unless jumping to a date
     LaunchedEffect(listState, dateForIndex) {
         snapshotFlow { centeredIndex }
             .filterNotNull()
             .distinctUntilChanged()
-            .collect { index -> currentOnDateSelected(dateForIndex(index)) }
+            .collect { index ->
+                if (!isJumpingToSelection) {
+                    currentOnDateSelected(dateForIndex(index))
+                }
+            }
     }
 
     LaunchedEffect(selectedDate, indexForDate) {
         val target = indexForDate(selectedDate)
         val current = centeredIndex
         if (current != target && !listState.isScrollInProgress) {
-            if (current != null && abs(target - current) <= MAX_ANIMATED_DAYS) {
-                listState.animateScrollToItem(target)
-            } else {
-                listState.scrollToItem(target)
+            isJumpingToSelection = true
+            try {
+                if (current != null && abs(target - current) <= MAX_ANIMATED_DAYS) {
+                    listState.animateScrollToItem(target)
+                } else {
+                    listState.scrollToItem(target)
+                }
+            } finally {
+                isJumpingToSelection = false
             }
         }
     }
