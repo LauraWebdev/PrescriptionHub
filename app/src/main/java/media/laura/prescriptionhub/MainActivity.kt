@@ -118,10 +118,16 @@ fun PrescriptionHubApp(navRequest: Pair<Int, AppDestinations>? = null) {
 
         null -> {
             val windowAdaptiveInfo = currentWindowAdaptiveInfo()
-            /* Small screens receive the narrow icon-only NavigationRail. Bigger screens like tablets use a sidebar with expanded labels */
+            /*
+             * Small screens receive the narrow icon-only NavigationRail. Bigger screens like
+             * tablets use a sidebar with expanded labels.
+             */
             val navigationLayoutType =
                 if (windowAdaptiveInfo.windowSizeClass.isWidthAtLeastBreakpoint(
                         WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND
+                    ) &&
+                    windowAdaptiveInfo.windowSizeClass.isHeightAtLeastBreakpoint(
+                        WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
                     )
                 ) {
                     NavigationSuiteType.WideNavigationRailExpanded
