@@ -29,9 +29,24 @@ jobs:
             echo "::error::Branch '${GITHUB_REF_NAME}' carries no version; expected e.g. release/1.2.0"
             exit 1
           fi
+          if ! [[ "$version" =~ ^([0-9]+)\.([0-9]+)(\.([0-9]+))?$ ]]; then
+            echo "::error::Version '${version}' is not major.minor[.patch]; expected e.g. release/1.2.0"
+            exit 1
+          fi
+          major="${BASH_REMATCH[1]}"
+          minor="${BASH_REMATCH[2]}"
+          patch="${BASH_REMATCH[4]:-0}"
+          if [ "$minor" -gt 99 ] || [ "$patch" -gt 99 ]; then
+            echo "::error::Version '${version}' overflows the version code scheme; minor and patch must be below 100"
+            exit 1
+          fi
+          # Derived from the version itself, so it rises with every release and a re-run of the
+          # same branch produces the same code.
+          code=$(( major * 10000 + minor * 100 + patch ))
           {
             echo "version=${version}"
             echo "tag=v${version}"
+            echo "code=${code}"
           } >> "$GITHUB_OUTPUT"
 
       - name: Set up JDK 21
@@ -52,7 +67,11 @@ jobs:
         run: ./gradlew testDebugUnitTest --stacktrace
 
       - name: Build release APK
-        run: ./gradlew assembleRelease --stacktrace
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
+        run: |
+          ./gradlew assembleRelease -PappVersionName="$VERSION" -PappVersionCode="$VERSION_CODE" --stacktrace
 
       - name: Stage APK
         id: apk

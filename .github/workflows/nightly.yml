@@ -35,20 +35,40 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build debug APK
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Collect build metadata
-        id: meta
+      - name: Derive nightly version
+        id: version
         run: |
           set -euo pipefail
           day="$(date -u +'%Y%m%d')"
-          sha="$(git rev-parse --short HEAD)"
-          apk="prescription-hub-nightly-${day}-${sha}-debug.apk"
+          {
+            echo "day=${day}"
+            echo "sha=$(git rev-parse --short HEAD)"
+            echo "date=$(date -u +'%Y-%m-%d')"
+            echo "name=nightly-${day}-$(git rev-parse --short HEAD)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build debug APK
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+          # The run number just has to keep climbing; nightlies are debug-signed and so are
+          # never upgraded to or from a release build.
+          VERSION_CODE: ${{ github.run_number }}
+        run: |
+          ./gradlew assembleDebug -PappVersionName="$VERSION_NAME" -PappVersionCode="$VERSION_CODE" --stacktrace
+
+      - name: Collect build metadata
+        id: meta
+        env:
+          DAY: ${{ steps.version.outputs.day }}
+          SHA: ${{ steps.version.outputs.sha }}
+          DATE: ${{ steps.version.outputs.date }}
+        run: |
+          set -euo pipefail
+          apk="prescription-hub-nightly-${DAY}-${SHA}-debug.apk"
           cp app/build/outputs/apk/debug/app-debug.apk "$apk"
           {
-            echo "tag=nightly-${day}-${sha}"
-            echo "title=Nightly $(date -u +'%Y-%m-%d') (${sha})"
+            echo "tag=nightly-${DAY}-${SHA}"
+            echo "title=Nightly ${DATE} (${SHA})"
             echo "apk=${apk}"
           } >> "$GITHUB_OUTPUT"
 

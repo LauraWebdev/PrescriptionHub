@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -89,34 +90,64 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun PrescriptionHubApp(navRequest: Pair<Int, AppDestinations>? = null) {
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.TODAY) }
+    var overlay by rememberSaveable { mutableStateOf<AppOverlay?>(null) }
 
     LaunchedEffect(navRequest) {
-        navRequest?.let { (_, destination) -> currentDestination = destination }
+        navRequest?.let { (_, destination) ->
+            currentDestination = destination
+            overlay = null
+        }
     }
 
-    NavigationSuiteScaffold(
-        navigationSuiteItems = {
-            AppDestinations.entries.forEach {
-                item(
-                    icon = {
-                        Icon(
-                            imageVector = it.icon,
-                            contentDescription = it.label
-                        )
-                    },
-                    label = { Text(it.label) },
-                    selected = it == currentDestination,
-                    onClick = { currentDestination = it }
+    BackHandler(enabled = overlay != null) {
+        overlay = if (overlay == AppOverlay.LICENSES) AppOverlay.SETTINGS else null
+    }
+
+    when (overlay) {
+        AppOverlay.SETTINGS -> SettingsScreen(
+            onBack = { overlay = null },
+            onOpenLicenses = { overlay = AppOverlay.LICENSES }
+        )
+
+        AppOverlay.LICENSES -> LicensesScreen(
+            onBack = { overlay = AppOverlay.SETTINGS }
+        )
+
+        null -> NavigationSuiteScaffold(
+            navigationSuiteItems = {
+                AppDestinations.entries.forEach {
+                    item(
+                        icon = {
+                            Icon(
+                                imageVector = it.icon,
+                                contentDescription = it.label
+                            )
+                        },
+                        label = { Text(it.label) },
+                        selected = it == currentDestination,
+                        onClick = { currentDestination = it }
+                    )
+                }
+            }
+        ) {
+            when (currentDestination) {
+                AppDestinations.TODAY -> TodayScreen(
+                    onOpenSettings = { overlay = AppOverlay.SETTINGS }
                 )
+
+                AppDestinations.CALENDAR -> CalendarScreen()
+                AppDestinations.PRESCRIPTION -> PrescriptionScreen()
             }
         }
-    ) {
-        when (currentDestination) {
-            AppDestinations.TODAY -> TodayScreen()
-            AppDestinations.CALENDAR -> CalendarScreen()
-            AppDestinations.PRESCRIPTION -> PrescriptionScreen()
-        }
     }
+}
+
+/**
+ * A screen shown on top of the tabs, without the navigation bar.
+ */
+enum class AppOverlay {
+    SETTINGS,
+    LICENSES,
 }
 
 enum class AppDestinations(

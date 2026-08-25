@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import media.laura.prescriptionhub.data.local.PrescriptionDatabase
+import media.laura.prescriptionhub.data.repository.AppDataWiper
 import media.laura.prescriptionhub.data.repository.PrescriptionRepository
 import media.laura.prescriptionhub.data.repository.PrescriptionService
 import media.laura.prescriptionhub.reminder.DoseNotifications
@@ -43,6 +44,14 @@ class PrescriptionHubApplication : Application() {
 
     val prescriptionService: PrescriptionService by lazy {
         ReminderSchedulingPrescriptionService(repository, reminderScheduler)
+    }
+
+    val appDataWiper: AppDataWiper by lazy {
+        AppDataWiper(
+            context = this,
+            database = database,
+            reminderScheduler = reminderScheduler
+        )
     }
 
     override fun onCreate() {

@@ -57,6 +57,32 @@ class DoseReminderScheduler(
         )
     }
 
+    /**
+     * Cancels every reminder this app may have armed.
+     */
+    suspend fun cancelAll() {
+        val now = nowProvider()
+        val storedKeys = runCatching {
+            serviceProvider().getDoseChecklistBetween(
+                now.minusHours(WINDOW_HOURS),
+                now.plusHours(WINDOW_HOURS + MAX_LEAD_HOURS)
+            ).map { dose ->
+                DoseReminderKey(
+                    prescriptionId = dose.prescriptionId,
+                    date = dose.scheduledDate,
+                    time = dose.scheduledTime
+                )
+            }
+        }.getOrElse { error ->
+            Log.w(TAG, "Could not load doses to cancel their reminders", error)
+            emptyList()
+        }
+
+        (armedKeys + storedKeys).forEach(::cancel)
+        armedKeys = emptySet()
+        cancelHorizonRefresh()
+    }
+
     /** Cancels any pending reminder for [key], including the follow-up. */
     fun cancel(key: DoseReminderKey) {
         val actions = listOf(DoseReminderReceiver.ACTION_FIRE, DoseReminderReceiver.ACTION_RELAX)
@@ -84,6 +110,18 @@ class DoseReminderScheduler(
             pendingIntent = pendingIntent(key, DoseReminderReceiver.ACTION_RELAX)
         )
         return true
+    }
+
+    /** Cancels the daily alarm that extends the scheduling horizon. */
+    private fun cancelHorizonRefresh() {
+        val pending = PendingIntent.getBroadcast(
+            context,
+            0,
+            DoseReminderReceiver.horizonRefreshIntent(context),
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        ) ?: return
+        alarmManager?.cancel(pending)
+        pending.cancel()
     }
 
     private fun armHorizonRefresh(now: LocalDateTime) {

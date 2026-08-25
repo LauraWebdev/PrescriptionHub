@@ -10,9 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,9 +39,12 @@ import java.time.LocalTime
 
 /**
  * The today tab.
+ *
+ * @param onOpenSettings Invoked when the user opens the settings screen.
  */
 @Composable
 fun TodayScreen(
+    onOpenSettings: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: TodayViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -62,6 +69,7 @@ fun TodayScreen(
         showExactAlarmWarning = !canScheduleExact && !warningHidden,
         onGrantExactAlarm = { openExactAlarmSettings(context) },
         onDismissExactAlarmWarning = { warningHidden = true },
+        onOpenSettings = onOpenSettings,
         modifier = modifier
     )
 }
@@ -76,6 +84,7 @@ fun TodayScreen(
  * @param showExactAlarmWarning Whether to warn that reminders cannot be delivered punctually.
  * @param onGrantExactAlarm Invoked when the user wants to grant the exact alarm permission.
  * @param onDismissExactAlarmWarning Invoked when the user hides that warning.
+ * @param onOpenSettings Invoked when the user opens the settings screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,6 +96,7 @@ fun TodayScreenContent(
     showExactAlarmWarning: Boolean = false,
     onGrantExactAlarm: () -> Unit = {},
     onDismissExactAlarmWarning: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val allTaken = groups.isNotEmpty() && groups.all { it.isComplete }
@@ -95,7 +105,15 @@ fun TodayScreenContent(
         modifier = modifier.fillMaxSize(),
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(text = "Today") }
+                title = { Text(text = "Today") },
+                actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(
+                            imageVector = Icons.Outlined.Settings,
+                            contentDescription = "Settings"
+                        )
+                    }
+                }
             )
         }
     ) { innerPadding ->

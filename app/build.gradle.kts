@@ -2,7 +2,12 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.aboutlibraries.android)
 }
+
+// The release and nightly workflows pass these in; local builds fall back to the defaults.
+val appVersionName: String = providers.gradleProperty("appVersionName").getOrElse("1.0")
+val appVersionCode: Int = providers.gradleProperty("appVersionCode").map(String::toInt).getOrElse(1)
 
 android {
     namespace = "media.laura.prescriptionhub"
@@ -14,8 +19,8 @@ android {
         applicationId = "media.laura.prescriptionhub"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -35,6 +40,8 @@ android {
     }
     buildFeatures {
         compose = true
+        // BuildConfig.VERSION_NAME feeds the version line on the settings screen.
+        buildConfig = true
     }
 }
 
@@ -55,6 +62,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.aboutlibraries.compose.m3)
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
