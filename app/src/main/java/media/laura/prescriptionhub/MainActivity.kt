@@ -86,7 +86,6 @@ class MainActivity : ComponentActivity() {
  *
  * @param navRequest A destination requested from Notifications
  */
-@PreviewScreenSizes
 @Composable
 fun PrescriptionHubApp(navRequest: Pair<Int, AppDestinations>? = null) {
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.TODAY) }
@@ -157,4 +156,12 @@ enum class AppDestinations(
     TODAY("Today", Icons.Default.Today),
     CALENDAR("Calendar", Icons.Default.History),
     PRESCRIPTION("Prescription", Icons.Default.Medication),
+}
+
+@PreviewScreenSizes
+@Composable
+private fun PrescriptionHubAppPreview() {
+    PrescriptionHubTheme {
+        PrescriptionHubApp()
+    }
 }
