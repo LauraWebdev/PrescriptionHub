@@ -47,6 +47,8 @@ jobs:
             echo "name=nightly-${day}-$(git rev-parse --short HEAD)"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Change wrapper permissions
+        run: chmod +x ./gradlew
       - name: Build debug APK
         env:
           VERSION_NAME: ${{ steps.version.outputs.name }}
