@@ -9,6 +9,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -20,12 +21,22 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.CalendarViewWeek
+import androidx.compose.material.icons.outlined.Event
+import androidx.compose.material.icons.outlined.Medication
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.Repeat
+import androidx.compose.material.icons.outlined.Scale
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
@@ -36,14 +47,11 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -59,8 +67,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
@@ -205,6 +215,8 @@ fun PrescriptionForm(
         SettingsGroup(title = "General") {
             FormTextRow(
                 label = "Name",
+                icon = Icons.Outlined.Medication,
+                placeholder = "e.g. Metformin",
                 value = name,
                 onValueChange = { name = it },
                 keyboardOptions = KeyboardOptions(
@@ -217,6 +229,7 @@ fun PrescriptionForm(
 
             FormTextRow(
                 label = "Dosage",
+                icon = Icons.Outlined.Scale,
                 value = dosis,
                 onValueChange = { dosis = it },
                 placeholder = "e.g. 500mg",
@@ -225,7 +238,7 @@ fun PrescriptionForm(
 
             HorizontalDivider()
 
-            FormControlRow(label = "Color") {
+            FormControlRow(label = "Color", icon = Icons.Outlined.Palette) {
                 ColorSwatchPicker(
                     selected = colorArgb.toComposeColor(),
                     onSelect = { colorArgb = it.toStoredLong() },
@@ -237,6 +250,7 @@ fun PrescriptionForm(
         SettingsGroup(title = "Schedule") {
             FormPickerRow(
                 label = "Type",
+                icon = Icons.Outlined.Repeat,
                 value = scheduleTypeLabel(scheduleType),
                 expanded = typeMenuExpanded,
                 onExpandedChange = { typeMenuExpanded = it }
@@ -259,7 +273,7 @@ fun PrescriptionForm(
             ) {
                 Column {
                     HorizontalDivider()
-                    FormControlRow(label = "Days") {
+                    FormControlRow(label = "Days", icon = Icons.Outlined.CalendarViewWeek) {
                         DayOfWeekToggles(
                             daysMask = daysMask,
                             onToggle = { daysMask = daysMask.toggleDay(it) }
@@ -277,6 +291,8 @@ fun PrescriptionForm(
                     HorizontalDivider()
                     FormTextRow(
                         label = "Interval",
+                        icon = Icons.Outlined.Update,
+                        placeholder = "1",
                         value = everyXDaysText,
                         onValueChange = { input ->
                             everyXDaysText = input.filter(Char::isDigit).take(3)
@@ -296,9 +312,15 @@ fun PrescriptionForm(
             ListItem(
                 headlineContent = { Text(text = "Start date") },
                 supportingContent = { Text(text = formatStartDate(startDate)) },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.Event,
+                        contentDescription = null
+                    )
+                },
                 trailingContent = {
                     Icon(
-                        imageVector = Icons.Default.DateRange,
+                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                         contentDescription = null
                     )
                 },
@@ -308,7 +330,7 @@ fun PrescriptionForm(
 
             HorizontalDivider()
 
-            FormControlRow(label = "Times") {
+            FormControlRow(label = "Times", icon = Icons.Outlined.Schedule) {
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -353,6 +375,7 @@ fun PrescriptionForm(
         SettingsGroup(title = "Reminder") {
             FormPickerRow(
                 label = "Remind me",
+                icon = Icons.Outlined.Notifications,
                 value = formatReminderLead(reminderLeadMinutes),
                 expanded = reminderMenuExpanded,
                 onExpandedChange = { reminderMenuExpanded = it }
@@ -528,10 +551,11 @@ private fun TimeOfDayPickerDialog(
 }
 
 /**
- * A text field that sits inside a [SettingsGroup].
+ * A [ListItem] whose supporting line is editable
  *
- * @param label Floating label naming the field.
- * @param value Current text.
+ * @param label Row title.
+ * @param icon Leading icon.
+ * @param value Current text, shown as the supporting line.
  * @param onValueChange Invoked with the edited text.
  * @param keyboardOptions Keyboard type and IME action for the field.
  * @param placeholder Hint shown while the field is empty.
@@ -541,6 +565,7 @@ private fun TimeOfDayPickerDialog(
 @Composable
 private fun FormTextRow(
     label: String,
+    icon: ImageVector,
     value: String,
     onValueChange: (String) -> Unit,
     keyboardOptions: KeyboardOptions,
@@ -549,35 +574,64 @@ private fun FormTextRow(
     prefix: String? = null,
     suffix: String? = null
 ) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(text = label) },
-        placeholder = placeholder?.let { { Text(text = it) } },
-        prefix = prefix?.let { { Text(text = it) } },
-        suffix = suffix?.let { { Text(text = it) } },
-        singleLine = true,
-        keyboardOptions = keyboardOptions,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent
-        ),
-        modifier = modifier.fillMaxWidth()
+    val supportingStyle = MaterialTheme.typography.bodyMedium
+    val supportingColor = MaterialTheme.colorScheme.onSurfaceVariant
+
+    ListItem(
+        headlineContent = { Text(text = label) },
+        supportingContent = {
+            BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                singleLine = true,
+                keyboardOptions = keyboardOptions,
+                textStyle = supportingStyle.copy(color = supportingColor),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                modifier = Modifier.fillMaxWidth(),
+                decorationBox = { innerTextField ->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (prefix != null) {
+                            Text(text = prefix, style = supportingStyle, color = supportingColor)
+                        }
+                        Box(modifier = Modifier.weight(1f)) {
+                            if (value.isEmpty() && placeholder != null) {
+                                Text(
+                                    text = placeholder,
+                                    style = supportingStyle,
+                                    color = supportingColor.copy(alpha = 0.6f)
+                                )
+                            }
+                            innerTextField()
+                        }
+                        if (suffix != null) {
+                            Text(text = suffix, style = supportingStyle, color = supportingColor)
+                        }
+                    }
+                }
+            )
+        },
+        leadingContent = {
+            Icon(imageVector = icon, contentDescription = null)
+        },
+        colors = settingsRowColors(),
+        modifier = modifier
     )
 }
 
 /**
  * A labelled row for a control that does not fit a [ListItem].
  *
- * @param label Row label, styled like a [ListItem] headline.
- * @param content The control, laid out below the label.
+ * @param label Row title.
+ * @param icon Leading icon.
+ * @param content The control, laid out below the title.
  */
 @Composable
 private fun FormControlRow(
     label: String,
+    icon: ImageVector,
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -587,11 +641,21 @@ private fun FormControlRow(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
         content()
     }
 }
@@ -599,7 +663,8 @@ private fun FormControlRow(
 /**
  * A [ListItem] row that shows the current selection and opens a dropdown when tapped.
  *
- * @param label Row label.
+ * @param label Row title.
+ * @param icon Leading icon.
  * @param value The current selection, shown as supporting text.
  * @param expanded Whether the dropdown is open.
  * @param onExpandedChange Invoked when the dropdown should open or close.
@@ -608,6 +673,7 @@ private fun FormControlRow(
 @Composable
 private fun FormPickerRow(
     label: String,
+    icon: ImageVector,
     value: String,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
@@ -618,6 +684,9 @@ private fun FormPickerRow(
         ListItem(
             headlineContent = { Text(text = label) },
             supportingContent = { Text(text = value) },
+            leadingContent = {
+                Icon(imageVector = icon, contentDescription = null)
+            },
             trailingContent = {
                 Icon(
                     imageVector = Icons.Default.ArrowDropDown,
