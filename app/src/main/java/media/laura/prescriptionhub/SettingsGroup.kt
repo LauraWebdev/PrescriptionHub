@@ -42,7 +42,7 @@ fun SettingsGroup(
         }
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            color = MaterialTheme.colorScheme.surfaceContainer,
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(content = content)
@@ -52,7 +52,7 @@ fun SettingsGroup(
 
 /** List item colours that let the [SettingsGroup] surface show through. */
 @Composable
-fun settingsRowColors() = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
+fun settingsRowColors() = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
 
 @Preview(showBackground = true)
 @Composable

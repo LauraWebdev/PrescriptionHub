@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Matches backgroundLight in ui/theme/Color.kt so the window behind Compose
-         (and the cold-launch frame) uses the app's own surface, not a stock grey. -->
-    <color name="window_background">#F5FBF5</color>
+    <!-- Matches backgroundLight in ui/theme/Color.kt. -->
+    <color name="window_background">#F7FAF7</color>
 </resources>
