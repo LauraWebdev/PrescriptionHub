@@ -3,19 +3,22 @@ package media.laura.prescriptionhub
 import media.laura.prescriptionhub.data.model.Schedule
 import media.laura.prescriptionhub.data.model.ScheduleType
 import java.time.DayOfWeek
-import java.time.format.TextStyle
-import java.util.Locale
 
 /**
  * One-line description of when a prescription is due.
+ *
+ * @param formats How the device writes times and weekday names.
  */
-fun formatScheduleSummary(schedule: Schedule): String {
-    val frequency = formatFrequency(schedule)
-    val times = schedule.timesOfDay.sorted().map(::formatTimeOfDay)
+fun formatScheduleSummary(schedule: Schedule, formats: DateTimeFormats): String {
+    val frequency = formatFrequency(schedule, formats)
+    val times = schedule.timesOfDay.sorted().map(formats::time)
     return (listOf(frequency) + times).joinToString(", ")
 }
 
-private fun formatFrequency(schedule: Schedule): String = when (schedule.scheduleType) {
+private fun formatFrequency(
+    schedule: Schedule,
+    formats: DateTimeFormats
+): String = when (schedule.scheduleType) {
     ScheduleType.DAILY -> DAILY_LABEL
 
     ScheduleType.SPECIFIC_DAYS_OF_WEEK -> {
@@ -23,9 +26,7 @@ private fun formatFrequency(schedule: Schedule): String = when (schedule.schedul
         when {
             days.isEmpty() -> DAILY_LABEL
             days.size == DayOfWeek.entries.size -> DAILY_LABEL
-            else -> days.joinToString(", ") {
-                it.getDisplayName(TextStyle.SHORT, Locale.getDefault())
-            }
+            else -> days.joinToString(", ", transform = formats::weekdayShort)
         }
     }
 

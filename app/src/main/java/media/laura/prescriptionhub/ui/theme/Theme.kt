@@ -7,9 +7,12 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import media.laura.prescriptionhub.LocalDateTimeFormats
+import media.laura.prescriptionhub.rememberDateTimeFormats
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -267,10 +270,12 @@ fun PrescriptionHubTheme(
       else -> lightScheme
   }
 
-  MaterialTheme(
-    colorScheme = colorScheme,
-    typography = AppTypography,
-    content = content
-  )
+  CompositionLocalProvider(LocalDateTimeFormats provides rememberDateTimeFormats()) {
+      MaterialTheme(
+        colorScheme = colorScheme,
+        typography = AppTypography,
+        content = content
+      )
+  }
 }
 

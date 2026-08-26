@@ -75,7 +75,7 @@ fun PrescriptionRow(
             leadingContent = { PrescriptionColorCircle(color = prescription.color) },
             trailingContent = {
                 Text(
-                    text = formatScheduleSummary(prescription.schedule),
+                    text = formatScheduleSummary(prescription.schedule, LocalDateTimeFormats.current),
                     style = MaterialTheme.typography.labelMedium,
                     textAlign = TextAlign.End,
                     maxLines = 2,

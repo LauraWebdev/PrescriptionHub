@@ -43,27 +43,28 @@ import java.time.LocalTime
 import java.time.format.TextStyle
 import java.util.Locale
 
-fun getDayOfMonthSuffix(day: Int): String {
-    if (day in 11..13) return "th"
-    return when (day % 10) {
-        1 -> "st"
-        2 -> "nd"
-        3 -> "rd"
-        else -> "th"
-    }
-}
-
-fun formatCalendarDate(date: LocalDate, today: LocalDate): String {
-    val day = date.dayOfMonth
-    val suffix = getDayOfMonthSuffix(day)
-    val month = date.month.getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
-    val sameYear = date.year == today.year
-    return if (sameYear) "$day$suffix $month" else "$day$suffix $month ${date.year}"
+/**
+ * A day the calendar is showing, with its year left off while it matches [today].
+ *
+ * @param formats How the device writes dates.
+ */
+fun formatCalendarDate(
+    date: LocalDate,
+    today: LocalDate,
+    formats: DateTimeFormats
+): String = if (date.year == today.year) {
+    formats.dayAndMonth(date)
+} else {
+    formats.dayMonthAndYear(date)
 }
 
 /** The calendar's app bar title format. */
-fun formatCalendarTitle(date: LocalDate, today: LocalDate): String {
-    val formatted = formatCalendarDate(date = date, today = today)
+fun formatCalendarTitle(
+    date: LocalDate,
+    today: LocalDate,
+    formats: DateTimeFormats
+): String {
+    val formatted = formatCalendarDate(date = date, today = today, formats = formats)
     return if (date == today) "Today, $formatted" else formatted
 }
 
@@ -130,7 +131,11 @@ fun CalendarScreenContent(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = formatCalendarTitle(date = selectedDate, today = today),
+                        text = formatCalendarTitle(
+                            date = selectedDate,
+                            today = today,
+                            formats = LocalDateTimeFormats.current
+                        ),
                         modifier = Modifier
                             .clip(MaterialTheme.shapes.small)
                             .clickable(onClickLabel = "Jump to a day") { showDayPicker = true }

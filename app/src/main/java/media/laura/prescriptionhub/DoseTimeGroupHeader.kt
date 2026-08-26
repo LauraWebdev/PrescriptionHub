@@ -48,7 +48,7 @@ fun DoseTimeGroupHeader(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = formatTimeOfDay(group.time),
+            text = LocalDateTimeFormats.current.time(group.time),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.weight(1f)
         )

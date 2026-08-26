@@ -30,7 +30,7 @@ fun DoseHistoryRow(
     modifier: Modifier = Modifier
 ) {
     val status = doseStatus(dose, now)
-    val label = formatDoseStatus(dose, now)
+    val label = formatDoseStatus(dose, now, LocalDateTimeFormats.current)
 
     ListItem(
         headlineContent = { Text(text = dose.prescriptionName) },

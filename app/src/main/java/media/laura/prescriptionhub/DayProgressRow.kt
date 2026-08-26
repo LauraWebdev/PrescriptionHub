@@ -183,6 +183,7 @@ private fun DayProgressRing(
         targetValue = progress?.progress ?: 0f,
         label = "dayProgress"
     )
+    val formats = LocalDateTimeFormats.current
     val isMuted = isUpcoming || progress == null
     val indicatorColor = when {
         !isMuted -> MaterialTheme.colorScheme.primary
@@ -204,7 +205,7 @@ private fun DayProgressRing(
                 .size(TOUCH_SIZE)
                 .clip(CircleShape)
                 .clickable(onClick = onClick)
-                .semantics { contentDescription = describeDay(date, progress, today) },
+                .semantics { contentDescription = describeDay(date, progress, today, formats) },
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(
@@ -222,8 +223,13 @@ private fun DayProgressRing(
 }
 
 /** What a screen reader says about a day ring. */
-private fun describeDay(date: LocalDate, progress: DoseDayProgress?, today: LocalDate): String {
-    val day = formatCalendarDate(date = date, today = today)
+private fun describeDay(
+    date: LocalDate,
+    progress: DoseDayProgress?,
+    today: LocalDate,
+    formats: DateTimeFormats
+): String {
+    val day = formatCalendarDate(date = date, today = today, formats = formats)
     return if (progress == null) {
         "$day, nothing scheduled"
     } else {

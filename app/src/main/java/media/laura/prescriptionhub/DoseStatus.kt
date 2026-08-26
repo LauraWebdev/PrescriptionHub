@@ -20,10 +20,16 @@ fun doseStatus(dose: DoseChecklistItem, now: LocalDateTime): DoseStatus = when {
 
 /**
  * The calendar's label for [dose], or `null` when the dose is still due.
+ *
+ * @param formats How the device writes times.
  */
-fun formatDoseStatus(dose: DoseChecklistItem, now: LocalDateTime): String? =
+fun formatDoseStatus(
+    dose: DoseChecklistItem,
+    now: LocalDateTime,
+    formats: DateTimeFormats
+): String? =
     when (doseStatus(dose, now)) {
-        DoseStatus.TAKEN -> dose.takenAt?.let { "Taken ${formatTimeOfDay(it.toLocalTime())}" } ?: "Taken"
+        DoseStatus.TAKEN -> dose.takenAt?.let { "Taken ${formats.time(it.toLocalTime())}" } ?: "Taken"
         DoseStatus.MISSED -> "Not taken"
         DoseStatus.UPCOMING -> null
     }

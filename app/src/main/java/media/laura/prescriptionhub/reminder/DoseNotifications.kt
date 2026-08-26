@@ -15,7 +15,7 @@ import androidx.core.content.ContextCompat
 import media.laura.prescriptionhub.MainActivity
 import media.laura.prescriptionhub.R
 import media.laura.prescriptionhub.data.model.DoseChecklistItem
-import media.laura.prescriptionhub.formatTimeOfDay
+import media.laura.prescriptionhub.DateTimeFormats
 import java.time.Duration
 import java.time.LocalDateTime
 
@@ -112,7 +112,7 @@ object DoseNotifications {
             .setSmallIcon(R.drawable.ic_notification)
             .setColor(dose.prescriptionColor.toInt())
             .setContentTitle(title)
-            .setContentText(describe(key, now, insistent))
+            .setContentText(describe(key, now, insistent, DateTimeFormats.from(context)))
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setContentIntent(contentIntent(context))
             .setDeleteIntent(broadcast(context, key, DoseReminderReceiver.ACTION_DISMISSED))
@@ -140,8 +140,13 @@ object DoseNotifications {
         return builder.build()
     }
 
-    private fun describe(key: DoseReminderKey, now: LocalDateTime, insistent: Boolean): String {
-        val at = formatTimeOfDay(key.time)
+    private fun describe(
+        key: DoseReminderKey,
+        now: LocalDateTime,
+        insistent: Boolean,
+        formats: DateTimeFormats
+    ): String {
+        val at = formats.time(key.time)
         if (!insistent) {
             return "Was due at $at · not taken yet"
         }

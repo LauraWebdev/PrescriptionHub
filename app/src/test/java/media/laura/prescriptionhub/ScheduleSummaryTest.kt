@@ -10,6 +10,7 @@ import java.time.LocalTime
 
 class ScheduleSummaryTest {
     private val anyStartDate = LocalDate.of(2026, 8, 19)
+    private val formats = testFormats()
 
     @Test
     fun dailyScheduleListsFrequencyThenTimes() {
@@ -18,7 +19,8 @@ class ScheduleSummaryTest {
                 scheduleType = ScheduleType.DAILY,
                 timesOfDay = listOf(LocalTime.of(8, 0), LocalTime.of(23, 0)),
                 startDate = anyStartDate
-            )
+            ),
+            formats
         )
 
         assertEquals("Daily, 08:00, 23:00", summary)
@@ -31,7 +33,8 @@ class ScheduleSummaryTest {
                 scheduleType = ScheduleType.DAILY,
                 timesOfDay = listOf(LocalTime.of(23, 0), LocalTime.of(8, 0)),
                 startDate = anyStartDate
-            )
+            ),
+            formats
         )
 
         assertEquals("Daily, 08:00, 23:00", summary)
@@ -40,7 +43,8 @@ class ScheduleSummaryTest {
     @Test
     fun scheduleWithoutTimesShowsOnlyFrequency() {
         val summary = formatScheduleSummary(
-            Schedule(scheduleType = ScheduleType.DAILY, timesOfDay = emptyList(), startDate = anyStartDate)
+            Schedule(scheduleType = ScheduleType.DAILY, timesOfDay = emptyList(), startDate = anyStartDate),
+            formats
         )
 
         assertEquals("Daily", summary)
@@ -54,12 +58,13 @@ class ScheduleSummaryTest {
                 daysOfWeek = listOf(DayOfWeek.FRIDAY, DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY),
                 timesOfDay = listOf(LocalTime.of(8, 0)),
                 startDate = anyStartDate
-            )
+            ),
+            formats
         )
 
         val expectedDays = listOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY)
             .joinToString(", ") {
-                it.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault())
+                formats.weekdayShort(it)
             }
         assertEquals("$expectedDays, 08:00", summary)
     }
@@ -72,7 +77,8 @@ class ScheduleSummaryTest {
                 daysOfWeek = DayOfWeek.entries.toList(),
                 timesOfDay = listOf(LocalTime.of(8, 0)),
                 startDate = anyStartDate
-            )
+            ),
+            formats
         )
 
         assertEquals("Daily, 08:00", summary)
@@ -86,7 +92,8 @@ class ScheduleSummaryTest {
                 daysOfWeek = emptyList(),
                 timesOfDay = listOf(LocalTime.of(8, 0)),
                 startDate = anyStartDate
-            )
+            ),
+            formats
         )
 
         assertEquals("Daily, 08:00", summary)
@@ -100,7 +107,8 @@ class ScheduleSummaryTest {
                 everyXDays = 3,
                 timesOfDay = listOf(LocalTime.of(9, 30)),
                 startDate = anyStartDate
-            )
+            ),
+            formats
         )
 
         assertEquals("Every 3 days, 09:30", summary)
@@ -114,7 +122,8 @@ class ScheduleSummaryTest {
                 everyXDays = 1,
                 timesOfDay = listOf(LocalTime.of(9, 30)),
                 startDate = anyStartDate
-            )
+            ),
+            formats
         )
 
         assertEquals("Every day, 09:30", summary)
@@ -128,7 +137,8 @@ class ScheduleSummaryTest {
                 everyXDays = null,
                 timesOfDay = listOf(LocalTime.of(9, 30)),
                 startDate = anyStartDate
-            )
+            ),
+            formats
         )
 
         assertEquals("Daily, 09:30", summary)

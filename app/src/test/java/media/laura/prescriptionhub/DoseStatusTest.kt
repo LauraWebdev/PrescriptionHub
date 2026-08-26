@@ -10,19 +10,21 @@ import java.time.LocalTime
 
 class DoseStatusTest {
 
+    private val formats = testFormats()
+
     @Test
     fun takenDoseReportsTheTimeItWasTakenAt() {
         val dose = dose(taken = true, takenAt = LocalDateTime.of(2026, 8, 19, 8, 3))
 
         assertEquals(DoseStatus.TAKEN, doseStatus(dose, now = LocalDateTime.of(2026, 8, 19, 18, 0)))
-        assertEquals("Taken 08:03", formatDoseStatus(dose, now = LocalDateTime.of(2026, 8, 19, 18, 0)))
+        assertEquals("Taken 08:03", formatDoseStatus(dose, now = LocalDateTime.of(2026, 8, 19, 18, 0), formats))
     }
 
     @Test
     fun takenDoseWithoutATimestampStillReadsAsTaken() {
         val dose = dose(taken = true, takenAt = null)
 
-        assertEquals("Taken", formatDoseStatus(dose, now = LocalDateTime.of(2026, 8, 19, 18, 0)))
+        assertEquals("Taken", formatDoseStatus(dose, now = LocalDateTime.of(2026, 8, 19, 18, 0), formats))
     }
 
     @Test
@@ -30,7 +32,7 @@ class DoseStatusTest {
         val dose = dose(taken = false)
 
         assertEquals(DoseStatus.MISSED, doseStatus(dose, now = LocalDateTime.of(2026, 8, 19, 18, 0)))
-        assertEquals("Not taken", formatDoseStatus(dose, now = LocalDateTime.of(2026, 8, 19, 18, 0)))
+        assertEquals("Not taken", formatDoseStatus(dose, now = LocalDateTime.of(2026, 8, 19, 18, 0), formats))
     }
 
     @Test
@@ -38,7 +40,7 @@ class DoseStatusTest {
         val dose = dose(taken = false)
 
         assertEquals(DoseStatus.UPCOMING, doseStatus(dose, now = LocalDateTime.of(2026, 8, 19, 7, 0)))
-        assertNull(formatDoseStatus(dose, now = LocalDateTime.of(2026, 8, 19, 7, 0)))
+        assertNull(formatDoseStatus(dose, now = LocalDateTime.of(2026, 8, 19, 7, 0), formats))
     }
 
     @Test
@@ -46,7 +48,7 @@ class DoseStatusTest {
         val dose = dose(taken = false, date = LocalDate.of(2026, 8, 25))
 
         assertEquals(DoseStatus.UPCOMING, doseStatus(dose, now = LocalDateTime.of(2026, 8, 19, 18, 0)))
-        assertNull(formatDoseStatus(dose, now = LocalDateTime.of(2026, 8, 19, 18, 0)))
+        assertNull(formatDoseStatus(dose, now = LocalDateTime.of(2026, 8, 19, 18, 0), formats))
     }
 
     @Test

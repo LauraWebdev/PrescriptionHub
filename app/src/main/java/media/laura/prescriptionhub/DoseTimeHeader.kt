@@ -20,7 +20,7 @@ fun DoseTimeHeader(
     modifier: Modifier = Modifier
 ) {
     Text(
-        text = formatTimeOfDay(time),
+        text = LocalDateTimeFormats.current.time(time),
         style = MaterialTheme.typography.titleMedium,
         modifier = modifier
             .fillMaxWidth()

@@ -88,10 +88,6 @@ import media.laura.prescriptionhub.ui.theme.PrescriptionHubTheme
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
-import java.time.format.TextStyle
-import java.util.Locale
 
 fun scheduleTypeLabel(type: ScheduleType): String = when (type) {
     ScheduleType.DAILY -> "Daily"
@@ -112,15 +108,6 @@ fun Int.toggleDay(day: DayOfWeek): Int = this xor (1 shl (day.value - 1))
 
 /** Whether [day] is set in a day bitmask. */
 fun Int.hasDay(day: DayOfWeek): Boolean = this and (1 shl (day.value - 1)) != 0
-
-private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-
-fun formatTimeOfDay(time: LocalTime): String = time.format(timeFormatter)
-
-private val dateFormatter: DateTimeFormatter =
-    DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-
-fun formatStartDate(date: LocalDate): String = date.format(dateFormatter)
 
 /** The reminder lead times offered in the form. `null` means no reminder. */
 val reminderLeadOptions: List<Int?> = listOf(null, 5, 10, 30, 60)
@@ -195,6 +182,7 @@ fun PrescriptionForm(
     var showTimePicker by rememberSaveable { mutableStateOf(false) }
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
 
+    val formats = LocalDateTimeFormats.current
     val startDateIsInPast = startDate < today
 
     val everyXDays = everyXDaysText.toIntOrNull()
@@ -316,7 +304,7 @@ fun PrescriptionForm(
 
             ListItem(
                 headlineContent = { Text(text = "Start date") },
-                supportingContent = { Text(text = formatStartDate(startDate)) },
+                supportingContent = { Text(text = formats.date(startDate)) },
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.Event,
@@ -377,11 +365,11 @@ fun PrescriptionForm(
                         InputChip(
                             selected = false,
                             onClick = { times.remove(time) },
-                            label = { Text(text = formatTimeOfDay(time)) },
+                            label = { Text(text = formats.time(time)) },
                             trailingIcon = {
                                 Icon(
                                     imageVector = Icons.Default.Close,
-                                    contentDescription = "Remove ${formatTimeOfDay(time)}",
+                                    contentDescription = "Remove ${formats.time(time)}",
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -541,8 +529,9 @@ private fun DayOfWeekToggles(
     modifier: Modifier = Modifier
 ) {
     MultiChoiceSegmentedButtonRow(modifier = modifier.fillMaxWidth()) {
+        val formats = LocalDateTimeFormats.current
         DayOfWeek.entries.forEachIndexed { index, day ->
-            val fullName = day.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
+            val fullName = formats.weekdayFull(day)
             SegmentedButton(
                 checked = daysMask.hasDay(day),
                 onCheckedChange = { onToggle(day) },
@@ -552,7 +541,7 @@ private fun DayOfWeekToggles(
                 ),
                 icon = {},
                 label = {
-                    Text(text = fullName.take(1))
+                    Text(text = formats.weekdayNarrow(day))
                 },
                 modifier = Modifier.semantics { contentDescription = fullName }
             )
@@ -572,7 +561,11 @@ private fun TimeOfDayPickerDialog(
     onConfirm: (LocalTime) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val state = rememberTimePickerState(initialHour = 8, initialMinute = 0, is24Hour = true)
+    val state = rememberTimePickerState(
+        initialHour = 8,
+        initialMinute = 0,
+        is24Hour = LocalDateTimeFormats.current.use24HourClock
+    )
 
     AlertDialog(
         onDismissRequest = onDismiss,
