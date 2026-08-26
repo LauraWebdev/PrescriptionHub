@@ -101,4 +101,12 @@ interface PrescriptionService {
     )
 
     suspend fun setDosesTaken(doses: List<DoseChecklistItem>, taken: Boolean)
+
+    /**
+     * Records every dose of [prescriptionId] that was already due at [until] as taken at the time
+     * it was scheduled for.
+     *
+     * @return How many doses were newly recorded.
+     */
+    suspend fun backfillTakenDoses(prescriptionId: Long, until: LocalDateTime): Int
 }

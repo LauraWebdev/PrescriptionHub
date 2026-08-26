@@ -105,8 +105,19 @@ interface PrescriptionDao {
     @Query("SELECT * FROM prescription_snapshots WHERE validTo IS NULL")
     suspend fun getOpenSnapshots(): List<PrescriptionSnapshot>
 
+    @Query(
+        """
+        SELECT * FROM prescription_snapshots WHERE prescriptionId = :prescriptionId
+        ORDER BY validFrom ASC, id ASC LIMIT 1
+        """
+    )
+    suspend fun getEarliestSnapshotForPrescription(prescriptionId: Long): PrescriptionSnapshot?
+
     @Query("UPDATE prescription_snapshots SET validTo = :validTo WHERE id = :snapshotId")
     suspend fun closePrescriptionSnapshot(snapshotId: Long, validTo: LocalDateTime)
+
+    @Query("UPDATE prescription_snapshots SET validFrom = :validFrom WHERE id = :snapshotId")
+    suspend fun backdatePrescriptionSnapshot(snapshotId: Long, validFrom: LocalDateTime)
 
     @Query("SELECT * FROM dose_intake_records ORDER BY id ASC")
     suspend fun getAllDoseIntakeRecordsOnce(): List<DoseIntakeRecord>

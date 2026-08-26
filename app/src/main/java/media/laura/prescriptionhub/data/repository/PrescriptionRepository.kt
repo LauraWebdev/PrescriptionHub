@@ -47,7 +47,7 @@ class PrescriptionRepository(
         val id = prescriptionDao.insertPrescription(prescription)
         val snapshot = PrescriptionSnapshot.fromPrescription(
             prescription = prescription.copy(id = id),
-            validFrom = nowProvider()
+            validFrom = historyStart(prescription.schedule.startDate, nowProvider())
         )
         prescriptionDao.insertPrescriptionSnapshot(snapshot)
         return id
@@ -62,6 +62,7 @@ class PrescriptionRepository(
             validFrom = closedAt
         )
         prescriptionDao.insertPrescriptionSnapshot(snapshot)
+        extendHistoryToStartDate(prescription.id, prescription.schedule.startDate, closedAt)
     }
 
     override suspend fun deletePrescription(prescription: Prescription) {
@@ -213,6 +214,61 @@ class PrescriptionRepository(
             )
         }
         prescriptionDao.upsertDoseIntakeRecords(records)
+    }
+
+    override suspend fun backfillTakenDoses(
+        prescriptionId: Long,
+        until: LocalDateTime
+    ): Int = withContext(workDispatcher) {
+        val historyStart = prescriptionDao.getEarliestSnapshotForPrescription(prescriptionId)
+            ?.validFrom
+            ?: return@withContext 0
+        if (until < historyStart) {
+            return@withContext 0
+        }
+
+        val doses = getDoseChecklistBetween(historyStart, until)
+            .filter { dose -> dose.prescriptionId == prescriptionId }
+        if (doses.isEmpty()) {
+            return@withContext 0
+        }
+
+        val recorded = prescriptionDao
+            .getDoseIntakeRecordsBetween(historyStart.toLocalDate(), until.toLocalDate())
+            .mapTo(mutableSetOf()) { record ->
+                DoseSlotKey(record.snapshotId, record.scheduledDate, record.scheduledTime)
+            }
+
+        val records = doses
+            .filterNot { dose ->
+                DoseSlotKey(dose.snapshotId, dose.scheduledDate, dose.scheduledTime) in recorded
+            }
+            .map { dose ->
+                DoseIntakeRecord(
+                    snapshotId = dose.snapshotId,
+                    scheduledDate = dose.scheduledDate,
+                    scheduledTime = dose.scheduledTime,
+                    taken = true,
+                    takenAt = dose.scheduledDateTime
+                )
+            }
+        prescriptionDao.upsertDoseIntakeRecords(records)
+        records.size
+    }
+
+    private fun historyStart(startDate: LocalDate, now: LocalDateTime): LocalDateTime =
+        if (startDate < now.toLocalDate()) startDate.atStartOfDay() else now
+
+    private suspend fun extendHistoryToStartDate(
+        prescriptionId: Long,
+        startDate: LocalDate,
+        now: LocalDateTime
+    ) {
+        val historyStart = historyStart(startDate, now)
+        val earliest = prescriptionDao.getEarliestSnapshotForPrescription(prescriptionId) ?: return
+        if (historyStart < earliest.validFrom) {
+            prescriptionDao.backdatePrescriptionSnapshot(earliest.id, historyStart)
+        }
     }
 
     /**

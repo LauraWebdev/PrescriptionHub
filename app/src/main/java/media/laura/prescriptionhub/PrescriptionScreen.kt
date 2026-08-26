@@ -71,7 +71,7 @@ fun PrescriptionScreenContent(
     prescriptions: List<Prescription>,
     today: LocalDate,
     isLoading: Boolean = false,
-    onSavePrescription: (Prescription) -> Unit = {},
+    onSavePrescription: (Prescription, Boolean) -> Unit = { _, _ -> },
     onDeletePrescription: (Prescription) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -148,8 +148,8 @@ fun PrescriptionScreenContent(
                 today = today,
                 modifier = Modifier.padding(bottom = 24.dp),
                 initialPrescription = editingPrescription,
-                onSave = { prescription ->
-                    onSavePrescription(prescription)
+                onSave = { prescription, backfillPastDoses ->
+                    onSavePrescription(prescription, backfillPastDoses)
                     closeForm()
                 }
             )

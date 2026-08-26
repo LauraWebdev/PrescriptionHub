@@ -90,4 +90,7 @@ class ReminderSchedulingPrescriptionService(
         delegate.setDosesTaken(doses, taken)
         scheduler.rearmWindow()
     }
+
+    override suspend fun backfillTakenDoses(prescriptionId: Long, until: LocalDateTime): Int =
+        delegate.backfillTakenDoses(prescriptionId, until).also { scheduler.rearmWindow() }
 }

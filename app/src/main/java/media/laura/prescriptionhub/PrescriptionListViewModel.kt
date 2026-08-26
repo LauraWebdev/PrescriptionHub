@@ -51,13 +51,19 @@ class PrescriptionListViewModel(
 
     /**
      * Inserts [prescription] when it is new, otherwise updates the existing row.
+     *
+     * @param backfillPastDoses Whether to record the doses already due as taken on the way.
      */
-    fun savePrescription(prescription: Prescription) {
+    fun savePrescription(prescription: Prescription, backfillPastDoses: Boolean = false) {
         viewModelScope.launch {
-            if (prescription.id == NEW_PRESCRIPTION_ID) {
+            val id = if (prescription.id == NEW_PRESCRIPTION_ID) {
                 prescriptionService.addPrescription(prescription)
             } else {
                 prescriptionService.updatePrescription(prescription)
+                prescription.id
+            }
+            if (backfillPastDoses) {
+                prescriptionService.backfillTakenDoses(id, nowProvider())
             }
         }
     }

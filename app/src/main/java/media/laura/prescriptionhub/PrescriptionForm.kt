@@ -27,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.CalendarViewWeek
+import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.Medication
 import androidx.compose.material.icons.outlined.Notifications
@@ -52,6 +53,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -155,7 +157,7 @@ fun PrescriptionForm(
     today: LocalDate,
     modifier: Modifier = Modifier,
     initialPrescription: Prescription? = null,
-    onSave: (Prescription) -> Unit = {}
+    onSave: (Prescription, Boolean) -> Unit = { _, _ -> }
 ) {
     var name by rememberSaveable(initialPrescription) {
         mutableStateOf(initialPrescription?.name.orEmpty())
@@ -185,12 +187,15 @@ fun PrescriptionForm(
     var reminderLeadMinutes by rememberSaveable(initialPrescription) {
         mutableStateOf(initialPrescription?.schedule?.reminderLeadMinutes)
     }
+    var backfillPastDoses by rememberSaveable(initialPrescription) { mutableStateOf(false) }
 
     var typeMenuExpanded by remember { mutableStateOf(false) }
     var reminderMenuExpanded by remember { mutableStateOf(false) }
     var showCustomColorDialog by rememberSaveable { mutableStateOf(false) }
     var showTimePicker by rememberSaveable { mutableStateOf(false) }
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
+
+    val startDateIsInPast = startDate < today
 
     val everyXDays = everyXDaysText.toIntOrNull()
     val isValid = name.isNotBlank() &&
@@ -328,6 +333,38 @@ fun PrescriptionForm(
                 modifier = Modifier.clickable { showDatePicker = true }
             )
 
+            AnimatedVisibility(
+                visible = startDateIsInPast,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column {
+                    HorizontalDivider()
+                    ListItem(
+                        headlineContent = { Text(text = "Mark past doses as taken") },
+                        supportingContent = {
+                            Text(text = "Fills in every dose already due since the start date")
+                        },
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.Outlined.DoneAll,
+                                contentDescription = null
+                            )
+                        },
+                        trailingContent = {
+                            Switch(
+                                checked = backfillPastDoses,
+                                onCheckedChange = { backfillPastDoses = it }
+                            )
+                        },
+                        colors = settingsRowColors(),
+                        modifier = Modifier.clickable {
+                            backfillPastDoses = !backfillPastDoses
+                        }
+                    )
+                }
+            }
+
             HorizontalDivider()
 
             FormControlRow(label = "Times", icon = Icons.Outlined.Schedule) {
@@ -433,7 +470,8 @@ fun PrescriptionForm(
                             reminderLeadMinutes = reminderLeadMinutes,
                             startDate = startDate
                         )
-                    )
+                    ),
+                    startDateIsInPast && backfillPastDoses
                 )
             },
             enabled = isValid,
@@ -466,6 +504,9 @@ fun PrescriptionForm(
             initialDate = startDate,
             onConfirm = { picked ->
                 startDate = picked
+                if (picked >= today) {
+                    backfillPastDoses = false
+                }
                 showDatePicker = false
             },
             onDismiss = { showDatePicker = false }
