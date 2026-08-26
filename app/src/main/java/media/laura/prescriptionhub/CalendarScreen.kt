@@ -1,6 +1,7 @@
 package media.laura.prescriptionhub
 
 import android.content.res.Configuration
+import android.content.res.Resources
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -58,14 +61,23 @@ fun formatCalendarDate(
     formats.dayMonthAndYear(date)
 }
 
-/** The calendar's app bar title format. */
+/**
+ * The calendar's app bar title format.
+ *
+ * @param resources Where the "today" wording is read from, in the user's language.
+ */
 fun formatCalendarTitle(
     date: LocalDate,
     today: LocalDate,
-    formats: DateTimeFormats
+    formats: DateTimeFormats,
+    resources: Resources
 ): String {
     val formatted = formatCalendarDate(date = date, today = today, formats = formats)
-    return if (date == today) "Today, $formatted" else formatted
+    return if (date == today) {
+        resources.getString(R.string.calendar_title_today, formatted)
+    } else {
+        formatted
+    }
 }
 
 /**
@@ -134,11 +146,14 @@ fun CalendarScreenContent(
                         text = formatCalendarTitle(
                             date = selectedDate,
                             today = today,
-                            formats = LocalDateTimeFormats.current
+                            formats = LocalDateTimeFormats.current,
+                            resources = LocalResources.current
                         ),
                         modifier = Modifier
                             .clip(MaterialTheme.shapes.small)
-                            .clickable(onClickLabel = "Jump to a day") { showDayPicker = true }
+                            .clickable(onClickLabel = stringResource(R.string.calendar_jump_to_day)) {
+                                showDayPicker = true
+                            }
                             .padding(horizontal = 12.dp, vertical = 4.dp)
                     )
                 },
@@ -146,7 +161,7 @@ fun CalendarScreenContent(
                     IconButton(onClick = onPreviousDay) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Previous Day"
+                            contentDescription = stringResource(R.string.calendar_previous_day)
                         )
                     }
                 },
@@ -154,7 +169,7 @@ fun CalendarScreenContent(
                     IconButton(onClick = onNextDay) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = "Next Day"
+                            contentDescription = stringResource(R.string.calendar_next_day)
                         )
                     }
                 }
@@ -184,8 +199,8 @@ fun CalendarScreenContent(
                     )
 
                     groups.isEmpty() -> DoseEmptyState(
-                        headline = "Nothing scheduled",
-                        message = "No dose was due on this day."
+                        headline = stringResource(R.string.calendar_empty_headline),
+                        message = stringResource(R.string.calendar_empty_message)
                     )
 
                     else -> LazyColumn(

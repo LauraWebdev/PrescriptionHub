@@ -42,10 +42,10 @@ object DoseNotifications {
         manager.createNotificationChannel(
             NotificationChannel(
                 CHANNEL_INSISTENT,
-                "Dose reminders",
+                context.getString(R.string.notification_channel_insistent_name),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Reminds you shortly before a dose is due"
+                description = context.getString(R.string.notification_channel_insistent_description)
                 setShowBadge(true)
             }
         )
@@ -53,10 +53,10 @@ object DoseNotifications {
         manager.createNotificationChannel(
             NotificationChannel(
                 CHANNEL_QUIET,
-                "Missed doses",
+                context.getString(R.string.notification_channel_quiet_name),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Quietly reminds you about a dose that is still not taken"
+                description = context.getString(R.string.notification_channel_quiet_description)
                 setShowBadge(true)
             }
         )
@@ -112,7 +112,7 @@ object DoseNotifications {
             .setSmallIcon(R.drawable.ic_notification)
             .setColor(dose.prescriptionColor.toInt())
             .setContentTitle(title)
-            .setContentText(describe(key, now, insistent, DateTimeFormats.from(context)))
+            .setContentText(describe(context, key, now, insistent, DateTimeFormats.from(context)))
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setContentIntent(contentIntent(context))
             .setDeleteIntent(broadcast(context, key, DoseReminderReceiver.ACTION_DISMISSED))
@@ -125,14 +125,14 @@ object DoseNotifications {
             )
             .addAction(
                 R.drawable.ic_notification,
-                "Taken",
+                context.getString(R.string.notification_action_taken),
                 broadcast(context, key, DoseReminderReceiver.ACTION_TAKEN)
             )
 
         if (insistent) {
             builder.addAction(
                 R.drawable.ic_notification,
-                "Snooze 5 min",
+                context.getString(R.string.notification_action_snooze),
                 broadcast(context, key, DoseReminderReceiver.ACTION_SNOOZE)
             )
         }
@@ -141,6 +141,7 @@ object DoseNotifications {
     }
 
     private fun describe(
+        context: Context,
         key: DoseReminderKey,
         now: LocalDateTime,
         insistent: Boolean,
@@ -148,15 +149,20 @@ object DoseNotifications {
     ): String {
         val at = formats.time(key.time)
         if (!insistent) {
-            return "Was due at $at · not taken yet"
+            return context.getString(R.string.notification_overdue_quiet, at)
         }
 
         val minutes = Duration.between(now, key.dueAt).toMinutes()
         return when {
-            minutes > 1L -> "Due at $at · in $minutes minutes"
-            minutes == 1L -> "Due at $at · in 1 minute"
-            minutes == 0L -> "Due at $at · now"
-            else -> "Due at $at · overdue"
+            minutes >= 1L -> context.resources.getQuantityString(
+                R.plurals.notification_due_in_minutes,
+                minutes.toInt(),
+                at,
+                minutes.toInt()
+            )
+
+            minutes == 0L -> context.getString(R.string.notification_due_now, at)
+            else -> context.getString(R.string.notification_due_overdue, at)
         }
     }
 

@@ -59,6 +59,14 @@ android {
             }
         }
     }
+    androidResources {
+        /*
+         * Builds res/xml/_generated_res_locale_config.xml from the values-* folders present and
+         * points android:localeConfig at it, so Android offers a per-app language picker.
+         * The unqualified values/ folder is declared as en-US in res/resources.properties.
+         */
+        generateLocaleConfig = true
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
@@ -66,6 +74,12 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+    testOptions {
+        unitTests {
+            // Robolectric resolves the app's strings, so the local tests need the merged resources.
+            isIncludeAndroidResources = true
+        }
     }
 }
 

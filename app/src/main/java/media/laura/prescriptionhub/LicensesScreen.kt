@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
@@ -41,12 +42,12 @@ fun LicensesScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(text = "Licenses") },
+                title = { Text(text = stringResource(R.string.licenses_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.action_back)
                         )
                     }
                 }
@@ -80,12 +81,11 @@ private fun AppLicenseHeader(modifier: Modifier = Modifier) {
             .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
         Text(
-            text = "Prescription Hub",
+            text = stringResource(R.string.app_name),
             style = MaterialTheme.typography.titleMedium
         )
         Text(
-            text = "Free software licensed under the GNU General Public License v3.0. " +
-                    "The libraries below ship with the app under their own licenses.",
+            text = stringResource(R.string.licenses_app_notice),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp)

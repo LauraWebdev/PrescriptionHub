@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,7 +57,7 @@ fun DoseTimeGroupHeader(
         if (!group.isComplete) {
             AssistChip(
                 onClick = onCheckAll,
-                label = { Text(text = "Check all") },
+                label = { Text(text = stringResource(R.string.dose_check_all)) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Check,
@@ -84,6 +85,11 @@ private fun DoseProgressRing(
     modifier: Modifier = Modifier
 ) {
     val progress by animateFloatAsState(targetValue = group.progress, label = "doseProgress")
+    val description = stringResource(
+        R.string.dose_group_progress,
+        group.takenCount,
+        group.doses.size
+    )
 
     CircularProgressIndicator(
         progress = { progress },
@@ -92,7 +98,7 @@ private fun DoseProgressRing(
         modifier = modifier
             .size(24.dp)
             .clearAndSetSemantics {
-                contentDescription = "${group.takenCount} of ${group.doses.size} taken"
+                contentDescription = description
             }
     )
 }

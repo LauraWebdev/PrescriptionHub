@@ -10,6 +10,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.History
@@ -28,6 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.core.content.ContextCompat
 import androidx.window.core.layout.WindowSizeClass
@@ -143,10 +145,10 @@ fun PrescriptionHubApp(navRequest: Pair<Int, AppDestinations>? = null) {
                             icon = {
                                 Icon(
                                     imageVector = it.icon,
-                                    contentDescription = it.label
+                                    contentDescription = stringResource(it.labelRes)
                                 )
                             },
-                            label = { Text(it.label) },
+                            label = { Text(stringResource(it.labelRes)) },
                             selected = it == currentDestination,
                             onClick = { currentDestination = it }
                         )
@@ -175,12 +177,12 @@ enum class AppOverlay {
 }
 
 enum class AppDestinations(
-    val label: String,
+    @StringRes val labelRes: Int,
     val icon: ImageVector,
 ) {
-    TODAY("Today", Icons.Default.Today),
-    CALENDAR("Calendar", Icons.Default.History),
-    PRESCRIPTION("Prescription", Icons.Default.Medication),
+    TODAY(R.string.nav_today, Icons.Default.Today),
+    CALENDAR(R.string.nav_calendar, Icons.Default.History),
+    PRESCRIPTION(R.string.nav_prescription, Icons.Default.Medication),
 }
 
 @PreviewScreenSizes

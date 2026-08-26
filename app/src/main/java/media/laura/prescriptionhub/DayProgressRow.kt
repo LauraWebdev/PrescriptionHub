@@ -1,5 +1,6 @@
 package media.laura.prescriptionhub
 
+import android.content.res.Resources
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -184,6 +186,7 @@ private fun DayProgressRing(
         label = "dayProgress"
     )
     val formats = LocalDateTimeFormats.current
+    val resources = LocalResources.current
     val isMuted = isUpcoming || progress == null
     val indicatorColor = when {
         !isMuted -> MaterialTheme.colorScheme.primary
@@ -205,7 +208,9 @@ private fun DayProgressRing(
                 .size(TOUCH_SIZE)
                 .clip(CircleShape)
                 .clickable(onClick = onClick)
-                .semantics { contentDescription = describeDay(date, progress, today, formats) },
+                .semantics {
+                    contentDescription = describeDay(date, progress, today, formats, resources)
+                },
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(
@@ -227,13 +232,19 @@ private fun describeDay(
     date: LocalDate,
     progress: DoseDayProgress?,
     today: LocalDate,
-    formats: DateTimeFormats
+    formats: DateTimeFormats,
+    resources: Resources
 ): String {
     val day = formatCalendarDate(date = date, today = today, formats = formats)
     return if (progress == null) {
-        "$day, nothing scheduled"
+        resources.getString(R.string.calendar_day_nothing_scheduled, day)
     } else {
-        "$day, ${progress.takenCount} of ${progress.doseCount} taken"
+        resources.getString(
+            R.string.calendar_day_progress,
+            day,
+            progress.takenCount,
+            progress.doseCount
+        )
     }
 }
 

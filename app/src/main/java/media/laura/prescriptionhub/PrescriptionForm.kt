@@ -1,6 +1,7 @@
 package media.laura.prescriptionhub
 
 import android.content.res.Configuration
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -73,6 +74,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
@@ -89,10 +92,12 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 
-fun scheduleTypeLabel(type: ScheduleType): String = when (type) {
-    ScheduleType.DAILY -> "Daily"
-    ScheduleType.SPECIFIC_DAYS_OF_WEEK -> "Specific Days of Week"
-    ScheduleType.EVERY_X_DAYS -> "Every X Days"
+/** Names [type] in the form's schedule type picker. */
+@StringRes
+fun scheduleTypeLabelRes(type: ScheduleType): Int = when (type) {
+    ScheduleType.DAILY -> R.string.schedule_type_daily
+    ScheduleType.SPECIFIC_DAYS_OF_WEEK -> R.string.schedule_type_specific_days
+    ScheduleType.EVERY_X_DAYS -> R.string.schedule_type_every_x_days
 }
 
 /** Expands a Monday-first day bitmask into the days it represents. */
@@ -113,10 +118,11 @@ fun Int.hasDay(day: DayOfWeek): Boolean = this and (1 shl (day.value - 1)) != 0
 val reminderLeadOptions: List<Int?> = listOf(null, 5, 10, 30, 60)
 
 /** Labels a reminder lead time of [minutes], where `null` means no reminder. */
+@Composable
 fun formatReminderLead(minutes: Int?): String = when (minutes) {
-    null -> "Never"
-    60 -> "1 hour before"
-    else -> "$minutes minutes before"
+    null -> stringResource(R.string.reminder_lead_never)
+    60 -> stringResource(R.string.reminder_lead_one_hour)
+    else -> pluralStringResource(R.plurals.reminder_lead_minutes, minutes, minutes)
 }
 
 /** Saver that persists a date as an ISO string. */
@@ -199,17 +205,21 @@ fun PrescriptionForm(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text(
-            text = if (initialPrescription == null) "New Prescription" else "Edit Prescription",
+            text = if (initialPrescription == null) {
+                stringResource(R.string.form_title_new)
+            } else {
+                stringResource(R.string.form_title_edit)
+            },
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
 
-        SettingsGroup(title = "General") {
+        SettingsGroup(title = stringResource(R.string.form_section_general)) {
             FormTextRow(
-                label = "Name",
+                label = stringResource(R.string.form_name_label),
                 icon = Icons.Outlined.Medication,
-                placeholder = "e.g. Metformin",
+                placeholder = stringResource(R.string.form_name_placeholder),
                 value = name,
                 onValueChange = { name = it },
                 keyboardOptions = KeyboardOptions(
@@ -221,17 +231,20 @@ fun PrescriptionForm(
             HorizontalDivider()
 
             FormTextRow(
-                label = "Dosage",
+                label = stringResource(R.string.form_dosage_label),
                 icon = Icons.Outlined.Scale,
                 value = dosis,
                 onValueChange = { dosis = it },
-                placeholder = "e.g. 500mg",
+                placeholder = stringResource(R.string.form_dosage_placeholder),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
             )
 
             HorizontalDivider()
 
-            FormControlRow(label = "Color", icon = Icons.Outlined.Palette) {
+            FormControlRow(
+                label = stringResource(R.string.form_color_label),
+                icon = Icons.Outlined.Palette
+            ) {
                 ColorSwatchPicker(
                     selected = colorArgb.toComposeColor(),
                     onSelect = { colorArgb = it.toStoredLong() },
@@ -240,17 +253,17 @@ fun PrescriptionForm(
             }
         }
 
-        SettingsGroup(title = "Schedule") {
+        SettingsGroup(title = stringResource(R.string.form_section_schedule)) {
             FormPickerRow(
-                label = "Type",
+                label = stringResource(R.string.form_type_label),
                 icon = Icons.Outlined.Repeat,
-                value = scheduleTypeLabel(scheduleType),
+                value = stringResource(scheduleTypeLabelRes(scheduleType)),
                 expanded = typeMenuExpanded,
                 onExpandedChange = { typeMenuExpanded = it }
             ) { dismiss ->
                 ScheduleType.entries.forEach { type ->
                     DropdownMenuItem(
-                        text = { Text(text = scheduleTypeLabel(type)) },
+                        text = { Text(text = stringResource(scheduleTypeLabelRes(type))) },
                         onClick = {
                             scheduleType = type
                             dismiss()
@@ -266,7 +279,10 @@ fun PrescriptionForm(
             ) {
                 Column {
                     HorizontalDivider()
-                    FormControlRow(label = "Days", icon = Icons.Outlined.CalendarViewWeek) {
+                    FormControlRow(
+                        label = stringResource(R.string.form_days_label),
+                        icon = Icons.Outlined.CalendarViewWeek
+                    ) {
                         DayOfWeekToggles(
                             daysMask = daysMask,
                             onToggle = { daysMask = daysMask.toggleDay(it) }
@@ -283,15 +299,15 @@ fun PrescriptionForm(
                 Column {
                     HorizontalDivider()
                     FormTextRow(
-                        label = "Interval",
+                        label = stringResource(R.string.form_interval_label),
                         icon = Icons.Outlined.Update,
-                        placeholder = "1",
+                        placeholder = stringResource(R.string.form_interval_placeholder),
                         value = everyXDaysText,
                         onValueChange = { input ->
                             everyXDaysText = input.filter(Char::isDigit).take(3)
                         },
-                        prefix = "Every",
-                        suffix = "days",
+                        prefix = stringResource(R.string.form_interval_prefix),
+                        suffix = stringResource(R.string.form_interval_suffix),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number,
                             imeAction = ImeAction.Done
@@ -303,7 +319,7 @@ fun PrescriptionForm(
             HorizontalDivider()
 
             ListItem(
-                headlineContent = { Text(text = "Start date") },
+                headlineContent = { Text(text = stringResource(R.string.form_start_date_label)) },
                 supportingContent = { Text(text = formats.date(startDate)) },
                 leadingContent = {
                     Icon(
@@ -329,9 +345,11 @@ fun PrescriptionForm(
                 Column {
                     HorizontalDivider()
                     ListItem(
-                        headlineContent = { Text(text = "Mark past doses as taken") },
+                        headlineContent = {
+                            Text(text = stringResource(R.string.form_backfill_label))
+                        },
                         supportingContent = {
-                            Text(text = "Fills in every dose already due since the start date")
+                            Text(text = stringResource(R.string.form_backfill_description))
                         },
                         leadingContent = {
                             Icon(
@@ -355,7 +373,10 @@ fun PrescriptionForm(
 
             HorizontalDivider()
 
-            FormControlRow(label = "Times", icon = Icons.Outlined.Schedule) {
+            FormControlRow(
+                label = stringResource(R.string.form_times_label),
+                icon = Icons.Outlined.Schedule
+            ) {
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -369,7 +390,10 @@ fun PrescriptionForm(
                             trailingIcon = {
                                 Icon(
                                     imageVector = Icons.Default.Close,
-                                    contentDescription = "Remove ${formats.time(time)}",
+                                    contentDescription = stringResource(
+                                        R.string.form_remove_time,
+                                        formats.time(time)
+                                    ),
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -377,7 +401,7 @@ fun PrescriptionForm(
                     }
                     AssistChip(
                         onClick = { showTimePicker = true },
-                        label = { Text(text = "Add time") },
+                        label = { Text(text = stringResource(R.string.form_add_time)) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Add,
@@ -389,7 +413,7 @@ fun PrescriptionForm(
                 }
                 if (times.isEmpty()) {
                     Text(
-                        text = "No times added yet",
+                        text = stringResource(R.string.form_times_empty),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -397,9 +421,9 @@ fun PrescriptionForm(
             }
         }
 
-        SettingsGroup(title = "Reminder") {
+        SettingsGroup(title = stringResource(R.string.form_section_reminder)) {
             FormPickerRow(
-                label = "Remind me",
+                label = stringResource(R.string.form_reminder_label),
                 icon = Icons.Outlined.Notifications,
                 value = formatReminderLead(reminderLeadMinutes),
                 expanded = reminderMenuExpanded,
@@ -424,8 +448,7 @@ fun PrescriptionForm(
                 Column {
                     HorizontalDivider()
                     Text(
-                        text = "The reminder stays on screen until you mark the dose as taken, " +
-                                "up to five minutes after it is due.",
+                        text = stringResource(R.string.form_reminder_description),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
@@ -468,7 +491,7 @@ fun PrescriptionForm(
                 .height(56.dp)
         ) {
             Text(
-                text = "Save",
+                text = stringResource(R.string.action_save),
                 style = MaterialTheme.typography.titleMedium
             )
         }
@@ -569,16 +592,16 @@ private fun TimeOfDayPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Add time") },
+        title = { Text(text = stringResource(R.string.form_add_time)) },
         text = { TimePicker(state = state) },
         confirmButton = {
             TextButton(onClick = { onConfirm(LocalTime.of(state.hour, state.minute)) }) {
-                Text(text = "OK")
+                Text(text = stringResource(R.string.action_ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(text = "Cancel")
+                Text(text = stringResource(R.string.action_cancel))
             }
         }
     )

@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -57,14 +58,14 @@ fun PrescriptionEmptyState(
         }
 
         Text(
-            text = "No prescriptions yet",
+            text = stringResource(R.string.prescription_empty_headline),
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 24.dp)
         )
 
         Text(
-            text = "Add a prescription to start tracking your daily doses.",
+            text = stringResource(R.string.prescription_empty_message),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -75,7 +76,7 @@ fun PrescriptionEmptyState(
             onClick = onAddPrescription,
             modifier = Modifier.padding(top = 24.dp)
         ) {
-            Text(text = "Add prescription")
+            Text(text = stringResource(R.string.prescription_empty_action))
         }
     }
 }

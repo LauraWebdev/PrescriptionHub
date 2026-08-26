@@ -4,17 +4,22 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.LocalDate
 import java.util.Locale
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 
+@RunWith(RobolectricTestRunner::class)
 class CalendarDateFormatTest {
 
     private val today = LocalDate.of(2026, 8, 19)
     private val formats = testFormats()
+    private val resources = RuntimeEnvironment.getApplication().resources
 
     @Test
     fun theSelectedDayIsMarkedWhenItIsToday() {
         assertEquals(
             "Today, 19 Aug",
-            formatCalendarTitle(date = today, today = today, formats = formats)
+            formatCalendarTitle(date = today, today = today, formats = formats, resources = resources)
         )
     }
 
@@ -22,7 +27,12 @@ class CalendarDateFormatTest {
     fun anotherDayOfTheSameYearIsWrittenWithoutTheYear() {
         assertEquals(
             "18 Aug",
-            formatCalendarTitle(date = today.minusDays(1), today = today, formats = formats)
+            formatCalendarTitle(
+                date = today.minusDays(1),
+                today = today,
+                formats = formats,
+                resources = resources
+            )
         )
     }
 
@@ -33,7 +43,8 @@ class CalendarDateFormatTest {
             formatCalendarTitle(
                 date = LocalDate.of(2025, 12, 31),
                 today = today,
-                formats = formats
+                formats = formats,
+                resources = resources
             )
         )
     }
@@ -51,7 +62,12 @@ class CalendarDateFormatTest {
 
         assertEquals(
             "Today, 19. Aug.",
-            formatCalendarTitle(date = today, today = today, formats = german)
+            formatCalendarTitle(
+                date = today,
+                today = today,
+                formats = german,
+                resources = resources
+            )
         )
     }
 }

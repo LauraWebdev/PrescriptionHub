@@ -1,7 +1,9 @@
 package media.laura.prescriptionhub
 
+import android.content.res.Resources
 import android.net.Uri
 import android.util.Log
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,10 +37,12 @@ data class SettingsUiState(
  *
  * @param appDataWiper Erases every trace of the user's data.
  * @param appDataBackup Moves the dataset in and out of a JSON file.
+ * @param resources Where the messages shown afterwards are read from, in the user's language.
  */
 class SettingsViewModel(
     private val appDataWiper: AppDataWiper,
-    private val appDataBackup: AppDataBackup
+    private val appDataBackup: AppDataBackup,
+    private val resources: Resources
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -69,8 +73,20 @@ class SettingsViewModel(
         viewModelScope.launch {
             val message = runCatching { appDataBackup.exportTo(target) }
                 .fold(
-                    onSuccess = { summary -> "Exported ${summary.describe()}." },
-                    onFailure = { error -> failureMessage("Export failed", error) }
+                    onSuccess = { summary ->
+                        resources.getString(
+                            R.string.backup_export_success,
+                            summary.prescriptions(),
+                            summary.doseRecords()
+                        )
+                    },
+                    onFailure = { error ->
+                        failureMessage(
+                            withReason = R.string.backup_export_failed_reason,
+                            generic = R.string.backup_export_failed,
+                            error = error
+                        )
+                    }
                 )
             _uiState.update { it.copy(isExporting = false, message = message) }
         }
@@ -85,8 +101,20 @@ class SettingsViewModel(
         viewModelScope.launch {
             val message = runCatching { appDataBackup.importFrom(source) }
                 .fold(
-                    onSuccess = { summary -> "Imported ${summary.describe()}." },
-                    onFailure = { error -> failureMessage("Import failed", error) }
+                    onSuccess = { summary ->
+                        resources.getString(
+                            R.string.backup_import_success,
+                            summary.prescriptions(),
+                            summary.doseRecords()
+                        )
+                    },
+                    onFailure = { error ->
+                        failureMessage(
+                            withReason = R.string.backup_import_failed_reason,
+                            generic = R.string.backup_import_failed,
+                            error = error
+                        )
+                    }
                 )
             _uiState.update { it.copy(isImporting = false, message = message) }
         }
@@ -98,20 +126,37 @@ class SettingsViewModel(
 
     /**
      * Turns an [error] into human readable text.
+     *
+     * @param withReason Wording for a file the app could read but not understand, taking the
+     *   reason as its one argument.
+     * @param generic Wording for anything else, where there is nothing useful to add.
      */
-    private fun failureMessage(prefix: String, error: Throwable): String {
-        Log.w(TAG, prefix, error)
+    private fun failureMessage(
+        @StringRes withReason: Int,
+        @StringRes generic: Int,
+        error: Throwable
+    ): String {
+        val fallback = resources.getString(generic)
+        Log.w(TAG, fallback, error)
         return when (error) {
-            is BackupFormatException -> "$prefix: ${error.message}"
-            else -> "$prefix. The file could not be read or written."
+            is BackupFormatException ->
+                resources.getString(withReason, resources.getString(error.messageRes))
+
+            else -> fallback
         }
     }
 
-    private fun BackupSummary.describe(): String =
-        "${count(prescriptionCount, "prescription")} and ${count(doseRecordCount, "dose record")}"
+    private fun BackupSummary.prescriptions(): String = resources.getQuantityString(
+        R.plurals.backup_prescription_count,
+        prescriptionCount,
+        prescriptionCount
+    )
 
-    private fun count(value: Int, noun: String): String =
-        if (value == 1) "$value $noun" else "$value ${noun}s"
+    private fun BackupSummary.doseRecords(): String = resources.getQuantityString(
+        R.plurals.backup_dose_record_count,
+        doseRecordCount,
+        doseRecordCount
+    )
 
     private companion object {
         const val TAG = "SettingsViewModel"

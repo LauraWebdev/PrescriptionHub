@@ -1,5 +1,6 @@
 package media.laura.prescriptionhub.data.backup
 
+import androidx.annotation.StringRes
 import media.laura.prescriptionhub.data.model.DoseIntakeRecord
 import media.laura.prescriptionhub.data.model.Prescription
 import media.laura.prescriptionhub.data.model.PrescriptionSnapshot
@@ -19,7 +20,12 @@ data class BackupData(
     val doseIntakeRecords: List<DoseIntakeRecord> = emptyList()
 )
 
+/**
+ * An error when importing a backup. 
+ *
+ * @param messageRes Message to the user
+ */
 class BackupFormatException(
-    message: String,
+    @StringRes val messageRes: Int,
     cause: Throwable? = null
-) : Exception(message, cause)
+) : Exception(cause)

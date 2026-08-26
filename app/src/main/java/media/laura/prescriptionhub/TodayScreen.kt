@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -105,12 +106,12 @@ fun TodayScreenContent(
         modifier = modifier.fillMaxSize(),
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(text = "Today") },
+                title = { Text(text = stringResource(R.string.today_title)) },
                 actions = {
                     IconButton(onClick = onOpenSettings) {
                         Icon(
                             imageVector = Icons.Outlined.Settings,
-                            contentDescription = "Settings"
+                            contentDescription = stringResource(R.string.today_settings)
                         )
                     }
                 }
@@ -144,8 +145,8 @@ fun TodayScreenContent(
                     )
 
                     groups.isEmpty() -> DoseEmptyState(
-                        headline = "Nothing scheduled today",
-                        message = "Doses show up here on the days your prescriptions are due."
+                        headline = stringResource(R.string.today_empty_headline),
+                        message = stringResource(R.string.today_empty_message)
                     )
 
                     else -> LazyColumn(

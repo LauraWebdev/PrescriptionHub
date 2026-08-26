@@ -6,6 +6,7 @@ import androidx.room.withTransaction
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import media.laura.prescriptionhub.R
 import media.laura.prescriptionhub.data.local.PrescriptionDatabase
 import media.laura.prescriptionhub.data.repository.AppDataWiper
 import media.laura.prescriptionhub.reminder.DoseReminderScheduler
@@ -125,9 +126,7 @@ class AppDataBackup(
             val read = read(chunk)
             if (read == -1) break
             if (collected.size() + read > maxBytes) {
-                throw BackupFormatException(
-                    "This file is too large to be a Prescription Hub backup."
-                )
+                throw BackupFormatException(R.string.backup_error_too_large)
             }
             collected.write(chunk, 0, read)
         }

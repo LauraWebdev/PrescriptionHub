@@ -25,6 +25,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -75,7 +77,11 @@ fun PrescriptionRow(
             leadingContent = { PrescriptionColorCircle(color = prescription.color) },
             trailingContent = {
                 Text(
-                    text = formatScheduleSummary(prescription.schedule, LocalDateTimeFormats.current),
+                    text = formatScheduleSummary(
+                        prescription.schedule,
+                        LocalDateTimeFormats.current,
+                        LocalResources.current
+                    ),
                     style = MaterialTheme.typography.labelMedium,
                     textAlign = TextAlign.End,
                     maxLines = 2,
@@ -113,7 +119,7 @@ private fun DeleteSwipeBackground(modifier: Modifier = Modifier) {
     ) {
         Icon(
             imageVector = Icons.Default.Delete,
-            contentDescription = "Delete",
+            contentDescription = stringResource(R.string.action_delete),
             tint = MaterialTheme.colorScheme.onErrorContainer
         )
     }

@@ -21,6 +21,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import media.laura.prescriptionhub.ui.theme.PrescriptionHubTheme
@@ -53,16 +54,20 @@ fun ExactAlarmBanner(
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Reminders may arrive late",
+                    text = stringResource(R.string.exact_alarm_title),
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(
-                    text = "Allow alarms and reminders so doses are announced on time.",
+                    text = stringResource(R.string.exact_alarm_message),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    TextButton(onClick = onGrant) { Text(text = "Allow") }
-                    TextButton(onClick = onDismiss) { Text(text = "Not now") }
+                    TextButton(onClick = onGrant) {
+                        Text(text = stringResource(R.string.exact_alarm_allow))
+                    }
+                    TextButton(onClick = onDismiss) {
+                        Text(text = stringResource(R.string.exact_alarm_not_now))
+                    }
                 }
             }
         }

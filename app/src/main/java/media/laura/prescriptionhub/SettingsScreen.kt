@@ -58,6 +58,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -182,12 +183,12 @@ fun SettingsScreenContent(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(text = "Settings") },
+                title = { Text(text = stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.action_back)
                         )
                     }
                 }
@@ -206,8 +207,8 @@ fun SettingsScreenContent(
 
             SettingsGroup {
                 ListItem(
-                    headlineContent = { Text(text = "Developed by") },
-                    supportingContent = { Text(text = "Laura Sofia Heimann") },
+                    headlineContent = { Text(text = stringResource(R.string.settings_developed_by)) },
+                    supportingContent = { Text(text = stringResource(R.string.developer_name)) },
                     leadingContent = {
                         Icon(imageVector = Icons.Outlined.Person, contentDescription = null)
                     },
@@ -217,8 +218,8 @@ fun SettingsScreenContent(
                 HorizontalDivider()
 
                 ListItem(
-                    headlineContent = { Text(text = "Website") },
-                    supportingContent = { Text(text = "laura.media") },
+                    headlineContent = { Text(text = stringResource(R.string.settings_website)) },
+                    supportingContent = { Text(text = stringResource(R.string.website_host)) },
                     leadingContent = {
                         Icon(imageVector = Icons.Outlined.Language, contentDescription = null)
                     },
@@ -235,8 +236,10 @@ fun SettingsScreenContent(
                 HorizontalDivider()
 
                 ListItem(
-                    headlineContent = { Text(text = "Donate on Ko-Fi") },
-                    supportingContent = { Text(text = "Support open-source development") },
+                    headlineContent = { Text(text = stringResource(R.string.settings_donate)) },
+                    supportingContent = {
+                        Text(text = stringResource(R.string.settings_donate_description))
+                    },
                     leadingContent = {
                         Icon(imageVector = Icons.Outlined.FavoriteBorder, contentDescription = null)
                     },
@@ -251,10 +254,10 @@ fun SettingsScreenContent(
                 )
             }
 
-            SettingsGroup(title = "Project") {
+            SettingsGroup(title = stringResource(R.string.settings_section_project)) {
                 ListItem(
-                    headlineContent = { Text(text = "GitHub") },
-                    supportingContent = { Text(text = "PrescriptionHub") },
+                    headlineContent = { Text(text = stringResource(R.string.settings_github)) },
+                    supportingContent = { Text(text = stringResource(R.string.github_repository)) },
                     leadingContent = {
                         Icon(imageVector = Icons.Outlined.Code, contentDescription = null)
                     },
@@ -271,8 +274,10 @@ fun SettingsScreenContent(
                 HorizontalDivider()
 
                 ListItem(
-                    headlineContent = { Text(text = "Licenses") },
-                    supportingContent = { Text(text = "Open-source licenses") },
+                    headlineContent = { Text(text = stringResource(R.string.settings_licenses)) },
+                    supportingContent = {
+                        Text(text = stringResource(R.string.settings_licenses_description))
+                    },
                     leadingContent = {
                         Icon(imageVector = Icons.Outlined.Description, contentDescription = null)
                     },
@@ -287,11 +292,11 @@ fun SettingsScreenContent(
                 )
             }
 
-            SettingsGroup(title = "Data") {
+            SettingsGroup(title = stringResource(R.string.settings_section_data)) {
                 ListItem(
-                    headlineContent = { Text(text = "Export data") },
+                    headlineContent = { Text(text = stringResource(R.string.settings_export)) },
                     supportingContent = {
-                        Text(text = "Save all prescriptions and history externally.")
+                        Text(text = stringResource(R.string.settings_export_description))
                     },
                     leadingContent = {
                         Icon(imageVector = Icons.Outlined.Upload, contentDescription = null)
@@ -308,9 +313,9 @@ fun SettingsScreenContent(
                 HorizontalDivider()
 
                 ListItem(
-                    headlineContent = { Text(text = "Import data") },
+                    headlineContent = { Text(text = stringResource(R.string.settings_import)) },
                     supportingContent = {
-                        Text(text = "Import a previously created data export")
+                        Text(text = stringResource(R.string.settings_import_description))
                     },
                     leadingContent = {
                         Icon(imageVector = Icons.Outlined.Download, contentDescription = null)
@@ -331,12 +336,12 @@ fun SettingsScreenContent(
                 ListItem(
                     headlineContent = {
                         Text(
-                            text = "Delete all data",
+                            text = stringResource(R.string.settings_delete_all),
                             color = MaterialTheme.colorScheme.error
                         )
                     },
                     supportingContent = {
-                        Text(text = "Removes every prescription and dose record")
+                        Text(text = stringResource(R.string.settings_delete_all_description))
                     },
                     leadingContent = {
                         Icon(
@@ -358,8 +363,7 @@ fun SettingsScreenContent(
             }
 
             Text(
-                text = "Prescription Hub is free software, licensed under the GNU General " +
-                        "Public License v3.0.",
+                text = stringResource(R.string.settings_license_notice),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -375,13 +379,9 @@ fun SettingsScreenContent(
     if (showDeleteConfirmation) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
-            title = { Text(text = "Delete all data?") },
+            title = { Text(text = stringResource(R.string.settings_delete_dialog_title)) },
             text = {
-                Text(
-                    text = "This permanently removes every prescription and every dose you " +
-                            "have recorded, cancels all reminders, and restarts Prescription " +
-                            "Hub. This cannot be undone."
-                )
+                Text(text = stringResource(R.string.settings_delete_dialog_message))
             },
             confirmButton = {
                 TextButton(
@@ -391,14 +391,14 @@ fun SettingsScreenContent(
                     }
                 ) {
                     Text(
-                        text = "Delete everything",
+                        text = stringResource(R.string.settings_delete_dialog_confirm),
                         color = MaterialTheme.colorScheme.error
                     )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirmation = false }) {
-                    Text(text = "Cancel")
+                    Text(text = stringResource(R.string.action_cancel))
                 }
             }
         )
@@ -407,13 +407,9 @@ fun SettingsScreenContent(
     if (showImportConfirmation) {
         AlertDialog(
             onDismissRequest = { showImportConfirmation = false },
-            title = { Text(text = "Replace all data?") },
+            title = { Text(text = stringResource(R.string.settings_import_dialog_title)) },
             text = {
-                Text(
-                    text = "Importing a backup removes every prescription and dose you have " +
-                            "recorded, and puts the contents of the file in their place. " +
-                            "Export first if you want to keep what is here."
-                )
+                Text(text = stringResource(R.string.settings_import_dialog_message))
             },
             confirmButton = {
                 TextButton(
@@ -422,12 +418,12 @@ fun SettingsScreenContent(
                         onImportData()
                     }
                 ) {
-                    Text(text = "Choose a file")
+                    Text(text = stringResource(R.string.settings_import_dialog_confirm))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showImportConfirmation = false }) {
-                    Text(text = "Cancel")
+                    Text(text = stringResource(R.string.action_cancel))
                 }
             }
         )
@@ -453,12 +449,12 @@ private fun AppIdentityHeader(
         AppIcon()
 
         Text(
-            text = "Prescription Hub",
+            text = stringResource(R.string.app_name),
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(top = 16.dp)
         )
         Text(
-            text = "Version $versionName",
+            text = stringResource(R.string.settings_version, versionName),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

@@ -27,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -97,12 +98,12 @@ fun PrescriptionScreenContent(
         modifier = modifier.fillMaxSize(),
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(text = "Prescription") },
+                title = { Text(text = stringResource(R.string.prescription_title)) },
                 actions = {
                     IconButton(onClick = { openAddForm() }) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Add Prescription"
+                            contentDescription = stringResource(R.string.prescription_add)
                         )
                     }
                 }
@@ -159,11 +160,12 @@ fun PrescriptionScreenContent(
     pendingDeletion?.let { prescription ->
         AlertDialog(
             onDismissRequest = { pendingDeletion = null },
-            title = { Text(text = "Delete ${prescription.name}?") },
+            title = {
+                Text(text = stringResource(R.string.prescription_delete_title, prescription.name))
+            },
             text = {
                 Text(
-                    text = "This removes the prescription from your list. Doses you already " +
-                            "recorded stay in your history."
+                    text = stringResource(R.string.prescription_delete_message)
                 )
             },
             confirmButton = {
@@ -174,14 +176,14 @@ fun PrescriptionScreenContent(
                     }
                 ) {
                     Text(
-                        text = "Delete",
+                        text = stringResource(R.string.action_delete),
                         color = MaterialTheme.colorScheme.error
                     )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { pendingDeletion = null }) {
-                    Text(text = "Cancel")
+                    Text(text = stringResource(R.string.action_cancel))
                 }
             }
         )

@@ -1,5 +1,6 @@
 package media.laura.prescriptionhub.data.backup
 
+import media.laura.prescriptionhub.R
 import media.laura.prescriptionhub.data.model.DoseIntakeRecord
 import media.laura.prescriptionhub.data.model.Prescription
 import media.laura.prescriptionhub.data.model.PrescriptionSnapshot
@@ -49,22 +50,19 @@ object BackupJson {
         val root = try {
             JSONObject(text)
         } catch (e: JSONException) {
-            throw BackupFormatException("This file is not valid JSON.", e)
+            throw BackupFormatException(R.string.backup_error_not_json, e)
         }
 
         if (root.optString("format") != FORMAT) {
-            throw BackupFormatException("This file is not a Prescription Hub backup.")
+            throw BackupFormatException(R.string.backup_error_not_a_backup)
         }
 
         val version = root.optInt("version", 0)
         if (version < 1) {
-            throw BackupFormatException("This backup does not say which version wrote it.")
+            throw BackupFormatException(R.string.backup_error_no_version)
         }
         if (version > VERSION) {
-            throw BackupFormatException(
-                "This backup was written by a newer version of Prescription Hub. " +
-                    "Update the app and try again."
-            )
+            throw BackupFormatException(R.string.backup_error_newer_version)
         }
 
         return try {
@@ -76,11 +74,11 @@ object BackupJson {
                 doseIntakeRecords = root.readList("doseIntakeRecords", ::doseIntakeRecordFromJson)
             )
         } catch (e: JSONException) {
-            throw BackupFormatException("This backup is missing data or is damaged.", e)
+            throw BackupFormatException(R.string.backup_error_incomplete, e)
         } catch (e: DateTimeParseException) {
-            throw BackupFormatException("This backup contains a date that cannot be read.", e)
+            throw BackupFormatException(R.string.backup_error_bad_date, e)
         } catch (e: IllegalArgumentException) {
-            throw BackupFormatException("This backup contains a value that cannot be read.", e)
+            throw BackupFormatException(R.string.backup_error_bad_value, e)
         }
     }
 

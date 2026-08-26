@@ -24,7 +24,11 @@ object AppViewModelProvider {
         }
         initializer {
             val application = prescriptionApplication()
-            SettingsViewModel(application.appDataWiper, application.appDataBackup)
+            SettingsViewModel(
+                application.appDataWiper,
+                application.appDataBackup,
+                application.resources
+            )
         }
     }
 }

@@ -1,5 +1,6 @@
 package media.laura.prescriptionhub
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +37,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,27 +48,27 @@ import media.laura.prescriptionhub.ui.theme.PrescriptionHubTheme
  * A preset color together with the accessibility label that names it.
  *
  * @param color The swatch color.
- * @param name Human-readable label.
+ * @param nameRes Human-readable label, in the user's language.
  */
-data class PrescriptionSwatch(val color: Color, val name: String)
+data class PrescriptionSwatch(val color: Color, @StringRes val nameRes: Int)
 
 /**
  * Preset swatches offered by the color picker.
  */
 val prescriptionSwatches: List<PrescriptionSwatch> = listOf(
-    PrescriptionSwatch(Color(0xFFE53935), "Red"),
-    PrescriptionSwatch(Color(0xFFF4511E), "Deep orange"),
-    PrescriptionSwatch(Color(0xFFFB8C00), "Orange"),
-    PrescriptionSwatch(Color(0xFFFDD835), "Yellow"),
-    PrescriptionSwatch(Color(0xFF7CB342), "Light green"),
-    PrescriptionSwatch(Color(0xFF43A047), "Green"),
-    PrescriptionSwatch(Color(0xFF00897B), "Teal"),
-    PrescriptionSwatch(Color(0xFF00ACC1), "Cyan"),
-    PrescriptionSwatch(Color(0xFF1E88E5), "Blue"),
-    PrescriptionSwatch(Color(0xFF3949AB), "Indigo"),
-    PrescriptionSwatch(Color(0xFF8E24AA), "Purple"),
-    PrescriptionSwatch(Color(0xFFD81B60), "Pink"),
-    PrescriptionSwatch(Color(0xFF6D4C41), "Brown")
+    PrescriptionSwatch(Color(0xFFE53935), R.string.color_red),
+    PrescriptionSwatch(Color(0xFFF4511E), R.string.color_deep_orange),
+    PrescriptionSwatch(Color(0xFFFB8C00), R.string.color_orange),
+    PrescriptionSwatch(Color(0xFFFDD835), R.string.color_yellow),
+    PrescriptionSwatch(Color(0xFF7CB342), R.string.color_light_green),
+    PrescriptionSwatch(Color(0xFF43A047), R.string.color_green),
+    PrescriptionSwatch(Color(0xFF00897B), R.string.color_teal),
+    PrescriptionSwatch(Color(0xFF00ACC1), R.string.color_cyan),
+    PrescriptionSwatch(Color(0xFF1E88E5), R.string.color_blue),
+    PrescriptionSwatch(Color(0xFF3949AB), R.string.color_indigo),
+    PrescriptionSwatch(Color(0xFF8E24AA), R.string.color_purple),
+    PrescriptionSwatch(Color(0xFFD81B60), R.string.color_pink),
+    PrescriptionSwatch(Color(0xFF6D4C41), R.string.color_brown)
 )
 
 /** The preset colors of [prescriptionSwatches], in the same order. */
@@ -105,13 +107,14 @@ fun ColorSwatchPicker(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         prescriptionSwatches.forEach { swatch ->
+            val swatchName = stringResource(swatch.nameRes)
             Surface(
                 onClick = { onSelect(swatch.color) },
                 shape = CircleShape,
                 color = swatch.color,
                 modifier = Modifier
                     .size(40.dp)
-                    .semantics { contentDescription = swatch.name }
+                    .semantics { contentDescription = swatchName }
             ) {
                 if (swatch.color.toStoredLong() == selected.toStoredLong()) {
                     Box(
@@ -129,13 +132,14 @@ fun ColorSwatchPicker(
             }
         }
 
+        val customName = stringResource(R.string.color_custom)
         Surface(
             onClick = onCustomClick,
             shape = CircleShape,
             color = Color.Transparent,
             modifier = Modifier
                 .size(40.dp)
-                .semantics { contentDescription = "Custom color" }
+                .semantics { contentDescription = customName }
         ) {
             Box(
                 modifier = Modifier
@@ -193,28 +197,29 @@ fun CustomColorDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Custom color") },
+        title = { Text(text = stringResource(R.string.color_custom)) },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                val previewDescription = stringResource(R.string.color_custom_preview)
                 Surface(
                     shape = CircleShape,
                     color = current,
                     modifier = Modifier
                         .size(72.dp)
-                        .semantics { contentDescription = "Selected color preview" }
+                        .semantics { contentDescription = previewDescription }
                 ) {}
 
                 GradientSlider(
-                    label = "Hue",
+                    label = stringResource(R.string.color_hue),
                     value = hue,
                     valueRange = 0f..360f,
                     colors = List(7) { Color.hsv((it * 60f) % 360f, 1f, 1f) },
                     onValueChange = { hue = it }
                 )
                 GradientSlider(
-                    label = "Saturation",
+                    label = stringResource(R.string.color_saturation),
                     value = saturation,
                     valueRange = 0f..1f,
                     colors = listOf(
@@ -224,7 +229,7 @@ fun CustomColorDialog(
                     onValueChange = { saturation = it }
                 )
                 GradientSlider(
-                    label = "Brightness",
+                    label = stringResource(R.string.color_brightness),
                     value = brightness,
                     valueRange = 0f..1f,
                     colors = listOf(
@@ -237,12 +242,12 @@ fun CustomColorDialog(
         },
         confirmButton = {
             TextButton(onClick = { onConfirm(current) }) {
-                Text(text = "Select")
+                Text(text = stringResource(R.string.color_select))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(text = "Cancel")
+                Text(text = stringResource(R.string.action_cancel))
             }
         }
     )
