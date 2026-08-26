@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- General actions -->
+    <string name="action_ok">Aceptar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_back">Atrás</string>
+
+    <!-- Separator between the parts of a list. Quoted so the trailing space survives. -->
+    <string name="list_separator">", "</string>
+
+    <!-- Navigation -->
+    <string name="nav_today">Hoy</string>
+    <string name="nav_calendar">Calendario</string>
+    <string name="nav_prescription">Medicamentos</string>
+
+    <!-- Today tab -->
+    <string name="today_title">Hoy</string>
+    <string name="today_settings">Ajustes</string>
+    <string name="today_empty_headline">Nada previsto para hoy</string>
+    <string name="today_empty_message">Las dosis aparecen aquí los días en que toca tomarlas.</string>
+    <string name="today_all_done">Todo listo por hoy</string>
+
+    <!-- Calendar tab -->
+    <!-- %1$s is the date. -->
+    <string name="calendar_title_today">Hoy, %1$s</string>
+    <string name="calendar_jump_to_day">Ir a un día</string>
+    <string name="calendar_previous_day">Día anterior</string>
+    <string name="calendar_next_day">Día siguiente</string>
+    <string name="calendar_empty_headline">Nada previsto</string>
+    <string name="calendar_empty_message">Este día no tocaba ninguna dosis.</string>
+    <!-- Screen reader label for a day ring. %1$s is the day. -->
+    <string name="calendar_day_nothing_scheduled">%1$s, nada previsto</string>
+    <!-- %1$s is the day, %2$d the doses taken, %3$d the doses due. -->
+    <string name="calendar_day_progress">%1$s, %2$d de %3$d tomadas</string>
+
+    <!-- Dose lists -->
+    <string name="dose_check_all">Marcar todas</string>
+    <!-- Screen reader label for a time slot ring. %1$d taken out of %2$d due. -->
+    <string name="dose_group_progress">%1$d de %2$d tomadas</string>
+    <!-- %1$s is the time the dose was taken at. -->
+    <string name="dose_status_taken_at">Tomada %1$s</string>
+    <string name="dose_status_taken">Tomada</string>
+    <string name="dose_status_missed">Sin tomar</string>
+
+    <!-- Prescription tab -->
+    <string name="prescription_title">Medicamentos</string>
+    <string name="prescription_add">Añadir medicamento</string>
+    <string name="prescription_empty_headline">Aún no hay medicamentos</string>
+    <string name="prescription_empty_message">Añade un medicamento para empezar a seguir las dosis diarias.</string>
+    <string name="prescription_empty_action">Añadir medicamento</string>
+    <!-- %1$s is the prescription name. -->
+    <string name="prescription_delete_title">¿Eliminar %1$s?</string>
+    <string name="prescription_delete_message">El medicamento desaparece de la lista. Las dosis ya registradas se mantienen en el historial.</string>
+
+    <!-- Prescription form -->
+    <string name="form_title_new">Nuevo medicamento</string>
+    <string name="form_title_edit">Editar medicamento</string>
+    <string name="form_section_general">General</string>
+    <string name="form_section_schedule">Pauta</string>
+    <string name="form_section_reminder">Recordatorio</string>
+    <string name="form_name_label">Nombre</string>
+    <string name="form_name_placeholder">p. ej. Metformina</string>
+    <string name="form_dosage_label">Dosis</string>
+    <string name="form_dosage_placeholder">p. ej. 500 mg</string>
+    <string name="form_color_label">Color</string>
+    <string name="form_type_label">Tipo</string>
+    <string name="form_days_label">Días</string>
+    <string name="form_interval_label">Intervalo</string>
+    <!-- Prefix/Suffix for the interval input. Example: "Every [ 3 ] days" -->
+    <string name="form_interval_prefix">Cada</string>
+    <string name="form_interval_suffix">días</string>
+    <string name="form_start_date_label">Fecha de inicio</string>
+    <string name="form_backfill_label">Marcar como tomadas las dosis pasadas</string>
+    <string name="form_backfill_description">Rellena todas las dosis vencidas desde la fecha de inicio</string>
+    <string name="form_times_label">Horas</string>
+    <string name="form_add_time">Añadir hora</string>
+    <!-- %1$s is the time being removed. -->
+    <string name="form_remove_time">Quitar %1$s</string>
+    <string name="form_times_empty">Aún no hay horas</string>
+    <string name="form_reminder_label">Avisar</string>
+    <string name="form_reminder_description">El recordatorio sigue en pantalla hasta que la dosis se marque como tomada, hasta cinco minutos después de la hora prevista.</string>
+
+    <!-- Schedule types -->
+    <string name="schedule_type_daily">A diario</string>
+    <string name="schedule_type_specific_days">Días concretos de la semana</string>
+    <string name="schedule_type_every_x_days">Cada X días</string>
+    <string name="schedule_summary_daily">A diario</string>
+    <string name="schedule_summary_every_day">Todos los días</string>
+    <!-- %1$d is the number of days between doses, always 2 or more. -->
+    <string name="schedule_summary_every_x_days">Cada %1$d días</string>
+
+    <!-- Reminder lead times -->
+    <string name="reminder_lead_never">Nunca</string>
+    <string name="reminder_lead_one_hour">1 hora antes</string>
+    <plurals name="reminder_lead_minutes">
+        <item quantity="one">%1$d minuto antes</item>
+        <item quantity="many">%1$d de minutos antes</item>
+        <item quantity="other">%1$d minutos antes</item>
+    </plurals>
+
+    <!-- Exact alarm permission banner -->
+    <string name="exact_alarm_title">Los avisos pueden llegar tarde</string>
+    <string name="exact_alarm_message">Permitir alarmas y recordatorios para que las dosis se avisen a tiempo.</string>
+    <string name="exact_alarm_allow">Permitir</string>
+    <string name="exact_alarm_not_now">Ahora no</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_insistent_name">Avisos de dosis</string>
+    <string name="notification_channel_insistent_description">Avisa poco antes de que toque una dosis</string>
+    <string name="notification_channel_quiet_name">Dosis olvidadas</string>
+    <string name="notification_channel_quiet_description">Recuerda discretamente una dosis que sigue sin tomarse</string>
+    <string name="notification_action_taken">Tomada</string>
+    <string name="notification_action_snooze">Posponer 5 min</string>
+    <!-- %1$s is the time the dose was due at. -->
+    <string name="notification_overdue_quiet">Tocaba a las %1$s · aún sin tomar</string>
+    <!-- %1$s is the due time, %2$d the minutes still to go. -->
+    <plurals name="notification_due_in_minutes">
+        <item quantity="one">A las %1$s · en %2$d minuto</item>
+        <item quantity="many">A las %1$s · en %2$d de minutos</item>
+        <item quantity="other">A las %1$s · en %2$d minutos</item>
+    </plurals>
+    <string name="notification_due_now">A las %1$s · ahora</string>
+    <string name="notification_due_overdue">A las %1$s · fuera de hora</string>
+
+    <!-- Color picker -->
+    <string name="color_red">Rojo</string>
+    <string name="color_deep_orange">Naranja oscuro</string>
+    <string name="color_orange">Naranja</string>
+    <string name="color_yellow">Amarillo</string>
+    <string name="color_light_green">Verde claro</string>
+    <string name="color_green">Verde</string>
+    <string name="color_teal">Verde azulado</string>
+    <string name="color_cyan">Cian</string>
+    <string name="color_blue">Azul</string>
+    <string name="color_indigo">Índigo</string>
+    <string name="color_purple">Morado</string>
+    <string name="color_pink">Rosa</string>
+    <string name="color_brown">Marrón</string>
+    <string name="color_custom">Color personalizado</string>
+    <string name="color_custom_preview">Vista previa del color elegido</string>
+    <string name="color_hue">Tono</string>
+    <string name="color_saturation">Saturación</string>
+    <string name="color_brightness">Brillo</string>
+    <string name="color_select">Seleccionar</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ajustes</string>
+    <!-- %1$s is the app version, e.g. "1.4". -->
+    <string name="settings_version">Versión %1$s</string>
+    <string name="settings_developed_by">Desarrollado por</string>
+    <string name="settings_website">Sitio web</string>
+    <string name="settings_donate">Donar en Ko-Fi</string>
+    <string name="settings_donate_description">Apoyar el desarrollo de código abierto</string>
+    <string name="settings_section_project">Proyecto</string>
+    <string name="settings_github">GitHub</string>
+    <string name="settings_licenses">Licencias</string>
+    <string name="settings_licenses_description">Licencias de código abierto</string>
+    <string name="settings_section_data">Datos</string>
+    <string name="settings_export">Exportar datos</string>
+    <string name="settings_export_description">Guardar fuera de la app todos los medicamentos y el historial.</string>
+    <string name="settings_import">Importar datos</string>
+    <string name="settings_import_description">Leer una exportación de datos creada antes</string>
+    <string name="settings_delete_all">Eliminar todos los datos</string>
+    <string name="settings_delete_all_description">Borra todos los medicamentos y registros de dosis</string>
+    <string name="settings_license_notice">Prescription Hub es software libre, publicado bajo la GNU General Public License v3.0.</string>
+    <string name="settings_delete_dialog_title">¿Eliminar todos los datos?</string>
+    <string name="settings_delete_dialog_message">Esto borra de forma permanente todos los medicamentos y todas las dosis registradas, cancela los recordatorios y reinicia Prescription Hub. No se puede deshacer.</string>
+    <string name="settings_delete_dialog_confirm">Eliminar todo</string>
+    <string name="settings_import_dialog_title">¿Sustituir todos los datos?</string>
+    <string name="settings_import_dialog_message">Importar una copia borra todos los medicamentos y dosis registrados y pone en su lugar el contenido del archivo. Conviene exportar antes para conservar lo que hay ahora.</string>
+    <string name="settings_import_dialog_confirm">Elegir un archivo</string>
+
+    <!-- Licenses screen -->
+    <string name="licenses_title">Licencias</string>
+    <string name="licenses_app_notice">Software libre publicado bajo la GNU General Public License v3.0. Las bibliotecas de abajo se incluyen con la app bajo sus propias licencias.</string>
+
+    <!-- Backup results -->
+    <plurals name="backup_prescription_count">
+        <item quantity="one">%1$d medicamento</item>
+        <item quantity="many">%1$d de medicamentos</item>
+        <item quantity="other">%1$d medicamentos</item>
+    </plurals>
+    <plurals name="backup_dose_record_count">
+        <item quantity="one">%1$d registro de dosis</item>
+        <item quantity="many">%1$d de registros de dosis</item>
+        <item quantity="other">%1$d registros de dosis</item>
+    </plurals>
+    <!-- %1$s and %2$s are counts. -->
+    <string name="backup_export_success">Exportados %1$s y %2$s.</string>
+    <string name="backup_import_success">Importados %1$s y %2$s.</string>
+    <!-- %1$s is the reason the backup could not be read. -->
+    <string name="backup_export_failed_reason">Error al exportar: %1$s</string>
+    <string name="backup_export_failed">Error al exportar. No se pudo leer ni escribir el archivo.</string>
+    <string name="backup_import_failed_reason">Error al importar: %1$s</string>
+    <string name="backup_import_failed">Error al importar. No se pudo leer ni escribir el archivo.</string>
+
+    <!-- Reasons a backup file cannot be read -->
+    <string name="backup_error_not_json">Este archivo no es JSON válido.</string>
+    <string name="backup_error_not_a_backup">Este archivo no es una copia de Prescription Hub.</string>
+    <string name="backup_error_no_version">Esta copia no indica con qué versión se creó.</string>
+    <string name="backup_error_newer_version">Esta copia se creó con una versión más reciente de Prescription Hub. Actualiza la app e inténtalo de nuevo.</string>
+    <string name="backup_error_incomplete">A esta copia le faltan datos o está dañada.</string>
+    <string name="backup_error_bad_date">Esta copia contiene una fecha que no se puede leer.</string>
+    <string name="backup_error_bad_value">Esta copia contiene un valor que no se puede leer.</string>
+    <string name="backup_error_too_large">Este archivo es demasiado grande para ser una copia de Prescription Hub.</string>
+
+</resources>

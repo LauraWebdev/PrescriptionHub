@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- General actions -->
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Annuleren</string>
+    <string name="action_save">Opslaan</string>
+    <string name="action_delete">Verwijderen</string>
+    <string name="action_back">Terug</string>
+
+    <!-- Separator between the parts of a list. Quoted so the trailing space survives. -->
+    <string name="list_separator">", "</string>
+
+    <!-- Navigation -->
+    <string name="nav_today">Vandaag</string>
+    <string name="nav_calendar">Kalender</string>
+    <string name="nav_prescription">Medicijnen</string>
+
+    <!-- Today tab -->
+    <string name="today_title">Vandaag</string>
+    <string name="today_settings">Instellingen</string>
+    <string name="today_empty_headline">Niets gepland voor vandaag</string>
+    <string name="today_empty_message">Doses verschijnen hier op de dagen dat ze aan de beurt zijn.</string>
+    <string name="today_all_done">Alles klaar voor vandaag</string>
+
+    <!-- Calendar tab -->
+    <!-- %1$s is the date. -->
+    <string name="calendar_title_today">Vandaag, %1$s</string>
+    <string name="calendar_jump_to_day">Naar een dag springen</string>
+    <string name="calendar_previous_day">Vorige dag</string>
+    <string name="calendar_next_day">Volgende dag</string>
+    <string name="calendar_empty_headline">Niets gepland</string>
+    <string name="calendar_empty_message">Op deze dag was er geen dosis aan de beurt.</string>
+    <!-- Screen reader label for a day ring. %1$s is the day. -->
+    <string name="calendar_day_nothing_scheduled">%1$s, niets gepland</string>
+    <!-- %1$s is the day, %2$d the doses taken, %3$d the doses due. -->
+    <string name="calendar_day_progress">%1$s, %2$d van %3$d ingenomen</string>
+
+    <!-- Dose lists -->
+    <string name="dose_check_all">Alles afvinken</string>
+    <!-- Screen reader label for a time slot ring. %1$d taken out of %2$d due. -->
+    <string name="dose_group_progress">%1$d van %2$d ingenomen</string>
+    <!-- %1$s is the time the dose was taken at. -->
+    <string name="dose_status_taken_at">Ingenomen om %1$s</string>
+    <string name="dose_status_taken">Ingenomen</string>
+    <string name="dose_status_missed">Niet ingenomen</string>
+
+    <!-- Prescription tab -->
+    <string name="prescription_title">Medicijnen</string>
+    <string name="prescription_add">Medicijn toevoegen</string>
+    <string name="prescription_empty_headline">Nog geen medicijnen</string>
+    <string name="prescription_empty_message">Voeg een medicijn toe om de dagelijkse doses bij te houden.</string>
+    <string name="prescription_empty_action">Medicijn toevoegen</string>
+    <!-- %1$s is the prescription name. -->
+    <string name="prescription_delete_title">%1$s verwijderen?</string>
+    <string name="prescription_delete_message">Het medicijn verdwijnt uit de lijst. Al vastgelegde doses blijven in de geschiedenis staan.</string>
+
+    <!-- Prescription form -->
+    <string name="form_title_new">Nieuw medicijn</string>
+    <string name="form_title_edit">Medicijn bewerken</string>
+    <string name="form_section_general">Algemeen</string>
+    <string name="form_section_schedule">Schema</string>
+    <string name="form_section_reminder">Herinnering</string>
+    <string name="form_name_label">Naam</string>
+    <string name="form_name_placeholder">bijv. Metformine</string>
+    <string name="form_dosage_label">Dosering</string>
+    <string name="form_dosage_placeholder">bijv. 500 mg</string>
+    <string name="form_color_label">Kleur</string>
+    <string name="form_type_label">Type</string>
+    <string name="form_days_label">Dagen</string>
+    <string name="form_interval_label">Interval</string>
+    <!-- Prefix/Suffix for the interval input. Example: "Every [ 3 ] days" -->
+    <string name="form_interval_prefix">Elke</string>
+    <string name="form_interval_suffix">dagen</string>
+    <string name="form_start_date_label">Startdatum</string>
+    <string name="form_backfill_label">Doses uit het verleden als ingenomen markeren</string>
+    <string name="form_backfill_description">Vult elke dosis in die sinds de startdatum aan de beurt was</string>
+    <string name="form_times_label">Tijden</string>
+    <string name="form_add_time">Tijd toevoegen</string>
+    <!-- %1$s is the time being removed. -->
+    <string name="form_remove_time">%1$s verwijderen</string>
+    <string name="form_times_empty">Nog geen tijden</string>
+    <string name="form_reminder_label">Herinner me</string>
+    <string name="form_reminder_description">De herinnering blijft in beeld tot de dosis als ingenomen is gemarkeerd, tot vijf minuten na het geplande tijdstip.</string>
+
+    <!-- Schedule types -->
+    <string name="schedule_type_daily">Dagelijks</string>
+    <string name="schedule_type_specific_days">Bepaalde dagen van de week</string>
+    <string name="schedule_type_every_x_days">Elke X dagen</string>
+    <string name="schedule_summary_daily">Dagelijks</string>
+    <string name="schedule_summary_every_day">Elke dag</string>
+    <!-- %1$d is the number of days between doses, always 2 or more. -->
+    <string name="schedule_summary_every_x_days">Elke %1$d dagen</string>
+
+    <!-- Reminder lead times -->
+    <string name="reminder_lead_never">Nooit</string>
+    <string name="reminder_lead_one_hour">1 uur van tevoren</string>
+    <plurals name="reminder_lead_minutes">
+        <item quantity="one">%1$d minuut van tevoren</item>
+        <item quantity="other">%1$d minuten van tevoren</item>
+    </plurals>
+
+    <!-- Exact alarm permission banner -->
+    <string name="exact_alarm_title">Herinneringen komen mogelijk te laat</string>
+    <string name="exact_alarm_message">Alarmen en herinneringen toestaan, zodat doses op tijd worden gemeld.</string>
+    <string name="exact_alarm_allow">Toestaan</string>
+    <string name="exact_alarm_not_now">Niet nu</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_insistent_name">Dosisherinneringen</string>
+    <string name="notification_channel_insistent_description">Waarschuwt kort voordat een dosis aan de beurt is</string>
+    <string name="notification_channel_quiet_name">Gemiste doses</string>
+    <string name="notification_channel_quiet_description">Herinnert stilletjes aan een dosis die nog niet is ingenomen</string>
+    <string name="notification_action_taken">Ingenomen</string>
+    <string name="notification_action_snooze">5 min uitstellen</string>
+    <!-- %1$s is the time the dose was due at. -->
+    <string name="notification_overdue_quiet">Was gepland om %1$s · nog niet ingenomen</string>
+    <!-- %1$s is the due time, %2$d the minutes still to go. -->
+    <plurals name="notification_due_in_minutes">
+        <item quantity="one">Gepland om %1$s · over %2$d minuut</item>
+        <item quantity="other">Gepland om %1$s · over %2$d minuten</item>
+    </plurals>
+    <string name="notification_due_now">Gepland om %1$s · nu</string>
+    <string name="notification_due_overdue">Gepland om %1$s · te laat</string>
+
+    <!-- Color picker -->
+    <string name="color_red">Rood</string>
+    <string name="color_deep_orange">Donkeroranje</string>
+    <string name="color_orange">Oranje</string>
+    <string name="color_yellow">Geel</string>
+    <string name="color_light_green">Lichtgroen</string>
+    <string name="color_green">Groen</string>
+    <string name="color_teal">Blauwgroen</string>
+    <string name="color_cyan">Cyaan</string>
+    <string name="color_blue">Blauw</string>
+    <string name="color_indigo">Indigo</string>
+    <string name="color_purple">Paars</string>
+    <string name="color_pink">Roze</string>
+    <string name="color_brown">Bruin</string>
+    <string name="color_custom">Eigen kleur</string>
+    <string name="color_custom_preview">Voorbeeld van de gekozen kleur</string>
+    <string name="color_hue">Tint</string>
+    <string name="color_saturation">Verzadiging</string>
+    <string name="color_brightness">Helderheid</string>
+    <string name="color_select">Selecteren</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Instellingen</string>
+    <!-- %1$s is the app version, e.g. "1.4". -->
+    <string name="settings_version">Versie %1$s</string>
+    <string name="settings_developed_by">Ontwikkeld door</string>
+    <string name="settings_website">Website</string>
+    <string name="settings_donate">Doneren op Ko-Fi</string>
+    <string name="settings_donate_description">Steun de opensourceontwikkeling</string>
+    <string name="settings_section_project">Project</string>
+    <string name="settings_github">GitHub</string>
+    <string name="settings_licenses">Licenties</string>
+    <string name="settings_licenses_description">Opensourcelicenties</string>
+    <string name="settings_section_data">Gegevens</string>
+    <string name="settings_export">Gegevens exporteren</string>
+    <string name="settings_export_description">Alle medicijnen en de geschiedenis buiten de app bewaren.</string>
+    <string name="settings_import">Gegevens importeren</string>
+    <string name="settings_import_description">Een eerder gemaakte export inlezen</string>
+    <string name="settings_delete_all">Alle gegevens verwijderen</string>
+    <string name="settings_delete_all_description">Wist alle medicijnen en dosisregistraties</string>
+    <string name="settings_license_notice">Prescription Hub is vrije software onder de GNU General Public License v3.0.</string>
+    <string name="settings_delete_dialog_title">Alle gegevens verwijderen?</string>
+    <string name="settings_delete_dialog_message">Dit wist voorgoed alle medicijnen en alle vastgelegde doses, annuleert alle herinneringen en start Prescription Hub opnieuw op. Dit kan niet ongedaan worden gemaakt.</string>
+    <string name="settings_delete_dialog_confirm">Alles verwijderen</string>
+    <string name="settings_import_dialog_title">Alle gegevens vervangen?</string>
+    <string name="settings_import_dialog_message">Een back-up importeren wist alle medicijnen en vastgelegde doses en zet de inhoud van het bestand ervoor in de plaats. Exporteer eerst om te bewaren wat er nu staat.</string>
+    <string name="settings_import_dialog_confirm">Een bestand kiezen</string>
+
+    <!-- Licenses screen -->
+    <string name="licenses_title">Licenties</string>
+    <string name="licenses_app_notice">Vrije software onder de GNU General Public License v3.0. De bibliotheken hieronder worden met de app meegeleverd onder hun eigen licenties.</string>
+
+    <!-- Backup results -->
+    <plurals name="backup_prescription_count">
+        <item quantity="one">%1$d medicijn</item>
+        <item quantity="other">%1$d medicijnen</item>
+    </plurals>
+    <plurals name="backup_dose_record_count">
+        <item quantity="one">%1$d dosisregistratie</item>
+        <item quantity="other">%1$d dosisregistraties</item>
+    </plurals>
+    <!-- %1$s and %2$s are counts. -->
+    <string name="backup_export_success">%1$s en %2$s geëxporteerd.</string>
+    <string name="backup_import_success">%1$s en %2$s geïmporteerd.</string>
+    <!-- %1$s is the reason the backup could not be read. -->
+    <string name="backup_export_failed_reason">Exporteren mislukt: %1$s</string>
+    <string name="backup_export_failed">Exporteren mislukt. Het bestand kon niet worden gelezen of geschreven.</string>
+    <string name="backup_import_failed_reason">Importeren mislukt: %1$s</string>
+    <string name="backup_import_failed">Importeren mislukt. Het bestand kon niet worden gelezen of geschreven.</string>
+
+    <!-- Reasons a backup file cannot be read -->
+    <string name="backup_error_not_json">Dit bestand is geen geldige JSON.</string>
+    <string name="backup_error_not_a_backup">Dit bestand is geen back-up van Prescription Hub.</string>
+    <string name="backup_error_no_version">Deze back-up vermeldt niet welke versie hem heeft gemaakt.</string>
+    <string name="backup_error_newer_version">Deze back-up komt van een nieuwere versie van Prescription Hub. Werk de app bij en probeer het opnieuw.</string>
+    <string name="backup_error_incomplete">Er ontbreken gegevens in deze back-up of hij is beschadigd.</string>
+    <string name="backup_error_bad_date">Deze back-up bevat een datum die niet gelezen kan worden.</string>
+    <string name="backup_error_bad_value">Deze back-up bevat een waarde die niet gelezen kan worden.</string>
+    <string name="backup_error_too_large">Dit bestand is te groot om een back-up van Prescription Hub te zijn.</string>
+
+</resources>

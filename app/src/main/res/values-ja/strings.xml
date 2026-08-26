@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- General actions -->
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">キャンセル</string>
+    <string name="action_save">保存</string>
+    <string name="action_delete">削除</string>
+    <string name="action_back">戻る</string>
+
+    <!-- Separator between the parts of a list. Quoted so the trailing space survives. -->
+    <string name="list_separator">、</string>
+
+    <!-- Navigation -->
+    <string name="nav_today">今日</string>
+    <string name="nav_calendar">カレンダー</string>
+    <string name="nav_prescription">薬</string>
+
+    <!-- Today tab -->
+    <string name="today_title">今日</string>
+    <string name="today_settings">設定</string>
+    <string name="today_empty_headline">今日の予定はありません</string>
+    <string name="today_empty_message">服用予定のある日に、ここに表示されます。</string>
+    <string name="today_all_done">今日の分はすべて完了</string>
+
+    <!-- Calendar tab -->
+    <!-- %1$s is the date. -->
+    <string name="calendar_title_today">今日、%1$s</string>
+    <string name="calendar_jump_to_day">日付を選ぶ</string>
+    <string name="calendar_previous_day">前の日</string>
+    <string name="calendar_next_day">次の日</string>
+    <string name="calendar_empty_headline">予定はありません</string>
+    <string name="calendar_empty_message">この日に服用予定はありませんでした。</string>
+    <!-- Screen reader label for a day ring. %1$s is the day. -->
+    <string name="calendar_day_nothing_scheduled">%1$s、予定なし</string>
+    <!-- %1$s is the day, %2$d the doses taken, %3$d the doses due. -->
+    <string name="calendar_day_progress">%1$s、%3$d 件中 %2$d 件服用</string>
+
+    <!-- Dose lists -->
+    <string name="dose_check_all">すべて完了</string>
+    <!-- Screen reader label for a time slot ring. %1$d taken out of %2$d due. -->
+    <string name="dose_group_progress">%2$d 件中 %1$d 件服用</string>
+    <!-- %1$s is the time the dose was taken at. -->
+    <string name="dose_status_taken_at">%1$s に服用</string>
+    <string name="dose_status_taken">服用済み</string>
+    <string name="dose_status_missed">未服用</string>
+
+    <!-- Prescription tab -->
+    <string name="prescription_title">薬</string>
+    <string name="prescription_add">薬を追加</string>
+    <string name="prescription_empty_headline">まだ薬がありません</string>
+    <string name="prescription_empty_message">薬を追加すると、毎日の服用を記録できます。</string>
+    <string name="prescription_empty_action">薬を追加</string>
+    <!-- %1$s is the prescription name. -->
+    <string name="prescription_delete_title">%1$s を削除しますか？</string>
+    <string name="prescription_delete_message">薬が一覧から消えます。記録済みの服用は履歴に残ります。</string>
+
+    <!-- Prescription form -->
+    <string name="form_title_new">新しい薬</string>
+    <string name="form_title_edit">薬を編集</string>
+    <string name="form_section_general">基本</string>
+    <string name="form_section_schedule">スケジュール</string>
+    <string name="form_section_reminder">リマインダー</string>
+    <string name="form_name_label">名前</string>
+    <string name="form_name_placeholder">例：メトホルミン</string>
+    <string name="form_dosage_label">用量</string>
+    <string name="form_dosage_placeholder">例：500 mg</string>
+    <string name="form_color_label">色</string>
+    <string name="form_type_label">種類</string>
+    <string name="form_days_label">曜日</string>
+    <string name="form_interval_label">間隔</string>
+    <!-- Prefix/Suffix for the interval input. Example: "Every [ 3 ] days" -->
+    <string name="form_interval_prefix"></string>
+    <string name="form_interval_suffix">日ごと</string>
+    <string name="form_start_date_label">開始日</string>
+    <string name="form_backfill_label">過去の分を服用済みにする</string>
+    <string name="form_backfill_description">開始日以降に予定されていた分をすべて記録します</string>
+    <string name="form_times_label">時刻</string>
+    <string name="form_add_time">時刻を追加</string>
+    <!-- %1$s is the time being removed. -->
+    <string name="form_remove_time">%1$s を削除</string>
+    <string name="form_times_empty">まだ時刻がありません</string>
+    <string name="form_reminder_label">通知</string>
+    <string name="form_reminder_description">リマインダーは服用済みにするまで表示されたままになります（予定時刻の5分後まで）。</string>
+
+    <!-- Schedule types -->
+    <string name="schedule_type_daily">毎日</string>
+    <string name="schedule_type_specific_days">特定の曜日</string>
+    <string name="schedule_type_every_x_days">X 日ごと</string>
+    <string name="schedule_summary_daily">毎日</string>
+    <string name="schedule_summary_every_day">毎日</string>
+    <!-- %1$d is the number of days between doses, always 2 or more. -->
+    <string name="schedule_summary_every_x_days">%1$d 日ごと</string>
+
+    <!-- Reminder lead times -->
+    <string name="reminder_lead_never">なし</string>
+    <string name="reminder_lead_one_hour">1時間前</string>
+    <plurals name="reminder_lead_minutes">
+        <item quantity="other">%1$d分前</item>
+    </plurals>
+
+    <!-- Exact alarm permission banner -->
+    <string name="exact_alarm_title">通知が遅れる可能性があります</string>
+    <string name="exact_alarm_message">アラームとリマインダーを許可すると、服用時刻どおりに通知されます。</string>
+    <string name="exact_alarm_allow">許可</string>
+    <string name="exact_alarm_not_now">後で</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_insistent_name">服用リマインダー</string>
+    <string name="notification_channel_insistent_description">服用時刻の少し前に通知します</string>
+    <string name="notification_channel_quiet_name">未服用のお知らせ</string>
+    <string name="notification_channel_quiet_description">まだ服用していない分を控えめに通知します</string>
+    <string name="notification_action_taken">服用した</string>
+    <string name="notification_action_snooze">5分後に再通知</string>
+    <!-- %1$s is the time the dose was due at. -->
+    <string name="notification_overdue_quiet">%1$s の予定 · まだ服用していません</string>
+    <!-- %1$s is the due time, %2$d the minutes still to go. -->
+    <plurals name="notification_due_in_minutes">
+        <item quantity="other">%1$s の予定 · あと %2$d 分</item>
+    </plurals>
+    <string name="notification_due_now">%1$s の予定 · 今です</string>
+    <string name="notification_due_overdue">%1$s の予定 · 時間を過ぎています</string>
+
+    <!-- Color picker -->
+    <string name="color_red">赤</string>
+    <string name="color_deep_orange">濃いオレンジ</string>
+    <string name="color_orange">オレンジ</string>
+    <string name="color_yellow">黄</string>
+    <string name="color_light_green">黄緑</string>
+    <string name="color_green">緑</string>
+    <string name="color_teal">ティール</string>
+    <string name="color_cyan">シアン</string>
+    <string name="color_blue">青</string>
+    <string name="color_indigo">インディゴ</string>
+    <string name="color_purple">紫</string>
+    <string name="color_pink">ピンク</string>
+    <string name="color_brown">茶</string>
+    <string name="color_custom">カスタムカラー</string>
+    <string name="color_custom_preview">選択した色のプレビュー</string>
+    <string name="color_hue">色相</string>
+    <string name="color_saturation">彩度</string>
+    <string name="color_brightness">明度</string>
+    <string name="color_select">選択</string>
+
+    <!-- Settings -->
+    <string name="settings_title">設定</string>
+    <!-- %1$s is the app version, e.g. "1.4". -->
+    <string name="settings_version">バージョン %1$s</string>
+    <string name="settings_developed_by">開発</string>
+    <string name="settings_website">ウェブサイト</string>
+    <string name="settings_donate">Ko-Fi で支援する</string>
+    <string name="settings_donate_description">オープンソース開発を応援する</string>
+    <string name="settings_section_project">プロジェクト</string>
+    <string name="settings_github">GitHub</string>
+    <string name="settings_licenses">ライセンス</string>
+    <string name="settings_licenses_description">オープンソースライセンス</string>
+    <string name="settings_section_data">データ</string>
+    <string name="settings_export">データを書き出す</string>
+    <string name="settings_export_description">すべての薬と履歴をアプリの外に保存します。</string>
+    <string name="settings_import">データを読み込む</string>
+    <string name="settings_import_description">以前に書き出したデータを読み込みます</string>
+    <string name="settings_delete_all">すべてのデータを削除</string>
+    <string name="settings_delete_all_description">すべての薬と服用記録を消去します</string>
+    <string name="settings_license_notice">Prescription Hub は GNU General Public License v3.0 のもとで公開されているフリーソフトウェアです。</string>
+    <string name="settings_delete_dialog_title">すべてのデータを削除しますか？</string>
+    <string name="settings_delete_dialog_message">すべての薬と記録した服用が完全に消え、リマインダーもすべて解除されて、Prescription Hub が再起動します。元には戻せません。</string>
+    <string name="settings_delete_dialog_confirm">すべて削除</string>
+    <string name="settings_import_dialog_title">すべてのデータを置き換えますか？</string>
+    <string name="settings_import_dialog_message">バックアップを読み込むと、すべての薬と記録した服用が消え、ファイルの内容に置き換わります。今のデータを残したい場合は、先に書き出してください。</string>
+    <string name="settings_import_dialog_confirm">ファイルを選ぶ</string>
+
+    <!-- Licenses screen -->
+    <string name="licenses_title">ライセンス</string>
+    <string name="licenses_app_notice">GNU General Public License v3.0 のもとで公開されているフリーソフトウェアです。下記のライブラリは、それぞれのライセンスのもとでアプリに同梱されています。</string>
+
+    <!-- Backup results -->
+    <plurals name="backup_prescription_count">
+        <item quantity="other">薬 %1$d 件</item>
+    </plurals>
+    <plurals name="backup_dose_record_count">
+        <item quantity="other">服用記録 %1$d 件</item>
+    </plurals>
+    <!-- %1$s and %2$s are counts. -->
+    <string name="backup_export_success">%1$s と %2$s を書き出しました。</string>
+    <string name="backup_import_success">%1$s と %2$s を読み込みました。</string>
+    <!-- %1$s is the reason the backup could not be read. -->
+    <string name="backup_export_failed_reason">書き出しに失敗しました: %1$s</string>
+    <string name="backup_export_failed">書き出しに失敗しました。ファイルを読み書きできませんでした。</string>
+    <string name="backup_import_failed_reason">読み込みに失敗しました: %1$s</string>
+    <string name="backup_import_failed">読み込みに失敗しました。ファイルを読み書きできませんでした。</string>
+
+    <!-- Reasons a backup file cannot be read -->
+    <string name="backup_error_not_json">このファイルは正しい JSON ではありません。</string>
+    <string name="backup_error_not_a_backup">このファイルは Prescription Hub のバックアップではありません。</string>
+    <string name="backup_error_no_version">このバックアップには、作成したバージョンの情報がありません。</string>
+    <string name="backup_error_newer_version">このバックアップは、新しいバージョンの Prescription Hub で作成されています。アプリを更新してからもう一度お試しください。</string>
+    <string name="backup_error_incomplete">このバックアップはデータが欠けているか、壊れています。</string>
+    <string name="backup_error_bad_date">このバックアップには、読み取れない日付が含まれています。</string>
+    <string name="backup_error_bad_value">このバックアップには、読み取れない値が含まれています。</string>
+    <string name="backup_error_too_large">このファイルは、Prescription Hub のバックアップにしては大きすぎます。</string>
+
+</resources>

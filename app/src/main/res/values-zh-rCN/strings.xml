@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- General actions -->
+    <string name="action_ok">确定</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_save">保存</string>
+    <string name="action_delete">删除</string>
+    <string name="action_back">返回</string>
+
+    <!-- Separator between the parts of a list. Quoted so the trailing space survives. -->
+    <string name="list_separator">、</string>
+
+    <!-- Navigation -->
+    <string name="nav_today">今天</string>
+    <string name="nav_calendar">日历</string>
+    <string name="nav_prescription">药物</string>
+
+    <!-- Today tab -->
+    <string name="today_title">今天</string>
+    <string name="today_settings">设置</string>
+    <string name="today_empty_headline">今天没有安排</string>
+    <string name="today_empty_message">到了该服药的日子，剂量会显示在这里。</string>
+    <string name="today_all_done">今天已全部完成</string>
+
+    <!-- Calendar tab -->
+    <!-- %1$s is the date. -->
+    <string name="calendar_title_today">今天，%1$s</string>
+    <string name="calendar_jump_to_day">跳转到某天</string>
+    <string name="calendar_previous_day">前一天</string>
+    <string name="calendar_next_day">后一天</string>
+    <string name="calendar_empty_headline">没有安排</string>
+    <string name="calendar_empty_message">这天没有需要服用的剂量。</string>
+    <!-- Screen reader label for a day ring. %1$s is the day. -->
+    <string name="calendar_day_nothing_scheduled">%1$s，没有安排</string>
+    <!-- %1$s is the day, %2$d the doses taken, %3$d the doses due. -->
+    <string name="calendar_day_progress">%1$s，%3$d 剂中已服用 %2$d 剂</string>
+
+    <!-- Dose lists -->
+    <string name="dose_check_all">全部勾选</string>
+    <!-- Screen reader label for a time slot ring. %1$d taken out of %2$d due. -->
+    <string name="dose_group_progress">%2$d 剂中已服用 %1$d 剂</string>
+    <!-- %1$s is the time the dose was taken at. -->
+    <string name="dose_status_taken_at">%1$s 已服用</string>
+    <string name="dose_status_taken">已服用</string>
+    <string name="dose_status_missed">未服用</string>
+
+    <!-- Prescription tab -->
+    <string name="prescription_title">药物</string>
+    <string name="prescription_add">添加药物</string>
+    <string name="prescription_empty_headline">还没有药物</string>
+    <string name="prescription_empty_message">添加药物后即可开始记录每天的服药情况。</string>
+    <string name="prescription_empty_action">添加药物</string>
+    <!-- %1$s is the prescription name. -->
+    <string name="prescription_delete_title">删除 %1$s？</string>
+    <string name="prescription_delete_message">该药物将从列表中移除。已记录的剂量仍保留在历史中。</string>
+
+    <!-- Prescription form -->
+    <string name="form_title_new">新建药物</string>
+    <string name="form_title_edit">编辑药物</string>
+    <string name="form_section_general">基本信息</string>
+    <string name="form_section_schedule">用药安排</string>
+    <string name="form_section_reminder">提醒</string>
+    <string name="form_name_label">名称</string>
+    <string name="form_name_placeholder">例如：二甲双胍</string>
+    <string name="form_dosage_label">剂量</string>
+    <string name="form_dosage_placeholder">例如：500 mg</string>
+    <string name="form_color_label">颜色</string>
+    <string name="form_type_label">类型</string>
+    <string name="form_days_label">日期</string>
+    <string name="form_interval_label">间隔</string>
+    <!-- Prefix/Suffix for the interval input. Example: "Every [ 3 ] days" -->
+    <string name="form_interval_prefix">每</string>
+    <string name="form_interval_suffix">天</string>
+    <string name="form_start_date_label">开始日期</string>
+    <string name="form_backfill_label">将过去的剂量标记为已服用</string>
+    <string name="form_backfill_description">补齐自开始日期以来所有到期的剂量</string>
+    <string name="form_times_label">时间</string>
+    <string name="form_add_time">添加时间</string>
+    <!-- %1$s is the time being removed. -->
+    <string name="form_remove_time">移除 %1$s</string>
+    <string name="form_times_empty">还没有添加时间</string>
+    <string name="form_reminder_label">提醒时间</string>
+    <string name="form_reminder_description">提醒会一直显示，直到剂量被标记为已服用，最长到预定时间后五分钟。</string>
+
+    <!-- Schedule types -->
+    <string name="schedule_type_daily">每天</string>
+    <string name="schedule_type_specific_days">每周指定日期</string>
+    <string name="schedule_type_every_x_days">每 X 天</string>
+    <string name="schedule_summary_daily">每天</string>
+    <string name="schedule_summary_every_day">每天</string>
+    <!-- %1$d is the number of days between doses, always 2 or more. -->
+    <string name="schedule_summary_every_x_days">每 %1$d 天</string>
+
+    <!-- Reminder lead times -->
+    <string name="reminder_lead_never">不提醒</string>
+    <string name="reminder_lead_one_hour">提前 1 小时</string>
+    <plurals name="reminder_lead_minutes">
+        <item quantity="other">提前 %1$d 分钟</item>
+    </plurals>
+
+    <!-- Exact alarm permission banner -->
+    <string name="exact_alarm_title">提醒可能会延迟</string>
+    <string name="exact_alarm_message">允许闹钟和提醒，剂量才能准时通知。</string>
+    <string name="exact_alarm_allow">允许</string>
+    <string name="exact_alarm_not_now">暂不</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_insistent_name">服药提醒</string>
+    <string name="notification_channel_insistent_description">在剂量到期前不久提醒</string>
+    <string name="notification_channel_quiet_name">遗漏的剂量</string>
+    <string name="notification_channel_quiet_description">安静地提醒仍未服用的剂量</string>
+    <string name="notification_action_taken">已服用</string>
+    <string name="notification_action_snooze">5 分钟后提醒</string>
+    <!-- %1$s is the time the dose was due at. -->
+    <string name="notification_overdue_quiet">原定 %1$s · 尚未服用</string>
+    <!-- %1$s is the due time, %2$d the minutes still to go. -->
+    <plurals name="notification_due_in_minutes">
+        <item quantity="other">预定 %1$s · %2$d 分钟后</item>
+    </plurals>
+    <string name="notification_due_now">预定 %1$s · 就是现在</string>
+    <string name="notification_due_overdue">预定 %1$s · 已超时</string>
+
+    <!-- Color picker -->
+    <string name="color_red">红色</string>
+    <string name="color_deep_orange">深橙色</string>
+    <string name="color_orange">橙色</string>
+    <string name="color_yellow">黄色</string>
+    <string name="color_light_green">浅绿色</string>
+    <string name="color_green">绿色</string>
+    <string name="color_teal">青绿色</string>
+    <string name="color_cyan">青色</string>
+    <string name="color_blue">蓝色</string>
+    <string name="color_indigo">靛蓝色</string>
+    <string name="color_purple">紫色</string>
+    <string name="color_pink">粉色</string>
+    <string name="color_brown">棕色</string>
+    <string name="color_custom">自定义颜色</string>
+    <string name="color_custom_preview">所选颜色预览</string>
+    <string name="color_hue">色相</string>
+    <string name="color_saturation">饱和度</string>
+    <string name="color_brightness">明度</string>
+    <string name="color_select">选择</string>
+
+    <!-- Settings -->
+    <string name="settings_title">设置</string>
+    <!-- %1$s is the app version, e.g. "1.4". -->
+    <string name="settings_version">版本 %1$s</string>
+    <string name="settings_developed_by">开发者</string>
+    <string name="settings_website">网站</string>
+    <string name="settings_donate">在 Ko-Fi 上捐赠</string>
+    <string name="settings_donate_description">支持开源开发</string>
+    <string name="settings_section_project">项目</string>
+    <string name="settings_github">GitHub</string>
+    <string name="settings_licenses">许可证</string>
+    <string name="settings_licenses_description">开源许可证</string>
+    <string name="settings_section_data">数据</string>
+    <string name="settings_export">导出数据</string>
+    <string name="settings_export_description">将所有药物和历史记录保存到应用之外。</string>
+    <string name="settings_import">导入数据</string>
+    <string name="settings_import_description">读取此前创建的数据导出文件</string>
+    <string name="settings_delete_all">删除所有数据</string>
+    <string name="settings_delete_all_description">清除所有药物和服药记录</string>
+    <string name="settings_license_notice">Prescription Hub 是自由软件，依据 GNU General Public License v3.0 授权。</string>
+    <string name="settings_delete_dialog_title">删除所有数据？</string>
+    <string name="settings_delete_dialog_message">此操作将永久清除所有药物和已记录的剂量，取消全部提醒，并重启 Prescription Hub。无法撤销。</string>
+    <string name="settings_delete_dialog_confirm">全部删除</string>
+    <string name="settings_import_dialog_title">替换所有数据？</string>
+    <string name="settings_import_dialog_message">导入备份会清除所有药物和已记录的剂量，并以文件中的内容取而代之。若想保留现有数据，请先导出。</string>
+    <string name="settings_import_dialog_confirm">选择文件</string>
+
+    <!-- Licenses screen -->
+    <string name="licenses_title">许可证</string>
+    <string name="licenses_app_notice">依据 GNU General Public License v3.0 授权的自由软件。下列库随应用一同分发，各自适用其自身的许可证。</string>
+
+    <!-- Backup results -->
+    <plurals name="backup_prescription_count">
+        <item quantity="other">%1$d 种药物</item>
+    </plurals>
+    <plurals name="backup_dose_record_count">
+        <item quantity="other">%1$d 条服药记录</item>
+    </plurals>
+    <!-- %1$s and %2$s are counts. -->
+    <string name="backup_export_success">已导出 %1$s 和 %2$s。</string>
+    <string name="backup_import_success">已导入 %1$s 和 %2$s。</string>
+    <!-- %1$s is the reason the backup could not be read. -->
+    <string name="backup_export_failed_reason">导出失败：%1$s</string>
+    <string name="backup_export_failed">导出失败。无法读取或写入该文件。</string>
+    <string name="backup_import_failed_reason">导入失败：%1$s</string>
+    <string name="backup_import_failed">导入失败。无法读取或写入该文件。</string>
+
+    <!-- Reasons a backup file cannot be read -->
+    <string name="backup_error_not_json">该文件不是有效的 JSON。</string>
+    <string name="backup_error_not_a_backup">该文件不是 Prescription Hub 的备份。</string>
+    <string name="backup_error_no_version">该备份未注明是由哪个版本创建的。</string>
+    <string name="backup_error_newer_version">该备份由更新版本的 Prescription Hub 创建。请更新应用后重试。</string>
+    <string name="backup_error_incomplete">该备份缺少数据或已损坏。</string>
+    <string name="backup_error_bad_date">该备份中包含无法读取的日期。</string>
+    <string name="backup_error_bad_value">该备份中包含无法读取的值。</string>
+    <string name="backup_error_too_large">该文件过大，不像是 Prescription Hub 的备份。</string>
+
+</resources>
