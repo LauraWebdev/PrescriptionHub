@@ -23,7 +23,8 @@ object AppViewModelProvider {
             CalendarViewModel(application.prescriptionService, application.nowProvider)
         }
         initializer {
-            SettingsViewModel(prescriptionApplication().appDataWiper)
+            val application = prescriptionApplication()
+            SettingsViewModel(application.appDataWiper, application.appDataBackup)
         }
     }
 }

@@ -32,6 +32,9 @@ interface PrescriptionDao {
     @Query("SELECT * FROM prescriptions ORDER BY id ASC")
     fun getAllPrescriptions(): Flow<List<Prescription>>
 
+    @Query("SELECT * FROM prescriptions ORDER BY id ASC")
+    suspend fun getAllPrescriptionsOnce(): List<Prescription>
+
     @Query("SELECT * FROM prescriptions WHERE id = :id")
     fun getPrescriptionById(id: Long): Flow<Prescription?>
 
@@ -84,8 +87,14 @@ interface PrescriptionDao {
         rangeEnd: LocalDateTime
     ): List<PrescriptionSnapshot>
 
+    @Query("SELECT * FROM prescription_snapshots ORDER BY id ASC")
+    suspend fun getAllSnapshotsOnce(): List<PrescriptionSnapshot>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPrescriptionSnapshot(snapshot: PrescriptionSnapshot): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPrescriptionSnapshots(snapshots: List<PrescriptionSnapshot>): List<Long>
 
     @Update
     suspend fun updatePrescriptionSnapshot(snapshot: PrescriptionSnapshot)
@@ -98,6 +107,9 @@ interface PrescriptionDao {
 
     @Query("UPDATE prescription_snapshots SET validTo = :validTo WHERE id = :snapshotId")
     suspend fun closePrescriptionSnapshot(snapshotId: Long, validTo: LocalDateTime)
+
+    @Query("SELECT * FROM dose_intake_records ORDER BY id ASC")
+    suspend fun getAllDoseIntakeRecordsOnce(): List<DoseIntakeRecord>
 
     @Query("SELECT * FROM dose_intake_records WHERE scheduledDate = :date")
     fun getDoseIntakeRecordsForDate(date: LocalDate): Flow<List<DoseIntakeRecord>>

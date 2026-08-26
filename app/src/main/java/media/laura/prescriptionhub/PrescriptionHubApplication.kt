@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import media.laura.prescriptionhub.data.backup.AppDataBackup
 import media.laura.prescriptionhub.data.local.PrescriptionDatabase
 import media.laura.prescriptionhub.data.repository.AppDataWiper
 import media.laura.prescriptionhub.data.repository.PrescriptionRepository
@@ -51,6 +52,17 @@ class PrescriptionHubApplication : Application() {
             context = this,
             database = database,
             reminderScheduler = reminderScheduler
+        )
+    }
+
+    val appDataBackup: AppDataBackup by lazy {
+        AppDataBackup(
+            context = this,
+            database = database,
+            appDataWiper = appDataWiper,
+            reminderScheduler = reminderScheduler,
+            appVersion = BuildConfig.VERSION_NAME,
+            nowProvider = nowProvider
         )
     }
 
