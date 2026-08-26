@@ -105,9 +105,8 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
 
-fun runProcess(command: List<String>, outFile: File? = null, inFile: File? = null, ignoreFailure: Boolean = false): Pair<Int, String> {
+fun runProcess(command: List<String>, outFile: File? = null, ignoreFailure: Boolean = false): Pair<Int, String> {
     val builder = ProcessBuilder(command).redirectError(ProcessBuilder.Redirect.INHERIT)
-    if (inFile != null) builder.redirectInput(inFile)
     if (outFile != null) builder.redirectOutput(outFile)
     val process = builder.start()
     val captured = if (outFile == null) String(process.inputStream.readBytes()) else ""
@@ -167,8 +166,8 @@ tasks.register("seedDebugDatabase") {
         val apk = project.file("build/outputs/apk/debug/app-debug.apk")
         if (!apk.exists()) error("Expected debug APK at $apk but it doesn't exist.")
 
-        fun adbExec(vararg args: String, out: File? = null, stdin: File? = null, ignoreFailure: Boolean = false): Pair<Int, String> =
-            runProcess(listOf(adb.absolutePath, "-s", serial) + args.toList(), outFile = out, inFile = stdin, ignoreFailure = ignoreFailure)
+        fun adbExec(vararg args: String, out: File? = null, ignoreFailure: Boolean = false): Pair<Int, String> =
+            runProcess(listOf(adb.absolutePath, "-s", serial) + args.toList(), outFile = out, ignoreFailure = ignoreFailure)
 
         println("Seeding debug database on $serial ($applicationId)...")
 
@@ -195,9 +194,20 @@ tasks.register("seedDebugDatabase") {
 
         adbExec("shell", "am", "force-stop", applicationId)
 
-        val tempDb = File.createTempFile("prescription_database", ".sqlite")
+        val tempDir = File.createTempFile("prescription-seed", "").let { placeholder ->
+            placeholder.delete()
+            placeholder.also { it.mkdirs() }
+        }
         try {
+            val tempDb = File(tempDir, "prescription_database")
+            val tempWal = File(tempDir, "prescription_database-wal")
             adbExec("exec-out", "run-as", applicationId, "cat", dbPath, out = tempDb)
+            
+            adbExec(
+                "exec-out", "run-as", applicationId, "cat", "$dbPath-wal",
+                out = tempWal, ignoreFailure = true
+            )
+            if (tempWal.length() == 0L) tempWal.delete()
 
             runProcess(
                 listOf(
@@ -207,10 +217,16 @@ tasks.register("seedDebugDatabase") {
                 )
             )
 
-            adbExec("shell", "run-as $applicationId sh -c 'cat > $dbPath'", stdin = tempDb)
-            adbExec("shell", "run-as", applicationId, "rm", "-f", "$dbPath-wal", "$dbPath-shm")
+            val stagedDb = "/data/local/tmp/prescription_database_seed"
+            adbExec("push", tempDb.absolutePath, stagedDb)
+            try {
+                adbExec("shell", "run-as $applicationId sh -c 'cat $stagedDb > $dbPath'")
+                adbExec("shell", "run-as", applicationId, "rm", "-f", "$dbPath-wal", "$dbPath-shm")
+            } finally {
+                adbExec("shell", "rm", "-f", stagedDb, ignoreFailure = true)
+            }
         } finally {
-            tempDb.delete()
+            tempDir.deleteRecursively()
         }
 
         adbExec("shell", "am", "start", "-n", "$applicationId/.MainActivity")

@@ -169,6 +169,9 @@ def seed(db_path, today):
     counts = {}
     for table in ("prescriptions", "prescription_snapshots", "dose_intake_records"):
         counts[table] = cur.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+
+    cur.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+
     conn.close()
     return counts
 
